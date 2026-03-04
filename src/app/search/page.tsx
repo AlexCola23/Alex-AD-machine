@@ -1,88 +1,79 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useCallback } from "react";
 import AdCard from "@/components/AdCard";
-import { Ad } from "@/lib/types";
+import FilterSidebar from "@/components/FilterSidebar";
+import { Ad, Filters } from "@/lib/types";
 
-const COUNTRIES = [
-  { value: "US", label: "🇺🇸 United States" },
-  { value: "GB", label: "🇬🇧 United Kingdom" },
-  { value: "CA", label: "🇨🇦 Canada" },
-  { value: "AU", label: "🇦🇺 Australia" },
-  { value: "DE", label: "🇩🇪 Germany" },
-  { value: "FR", label: "🇫🇷 France" },
-  { value: "NL", label: "🇳🇱 Netherlands" },
-];
-
-const inputStyle: React.CSSProperties = {
-  background: "#18181b",
-  border: "1px solid #27272a",
-  borderRadius: "8px",
-  color: "#fafafa",
-  fontSize: "0.875rem",
-  padding: "0.5rem 0.75rem",
-  outline: "none",
-};
-
-const selectStyle: React.CSSProperties = {
-  ...inputStyle,
-  cursor: "pointer",
+const DEFAULT_FILTERS: Filters = {
+  countries: ["US"],
+  status: "ACTIVE",
+  platforms: [],
+  runTime: 0,
+  sortBy: "running",
 };
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
-  const [country, setCountry] = useState("US");
-  const [status, setStatus] = useState("ACTIVE");
-  const [sortBy, setSortBy] = useState("running");
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [nextCursor, setNextCursor] = useState("");
   const [searched, setSearched] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  async function fetchAds(cursor = "") {
+  const applyFilters = useCallback((raw: Ad[], f: Filters): Ad[] => {
+    let out = [...raw];
+    if (f.platforms.length > 0) {
+      out = out.filter(a => f.platforms.some(p => a.publisher_platforms?.includes(p)));
+    }
+    if (f.runTime > 0) {
+      out = out.filter(a => {
+        if (!a.ad_delivery_start_time) return false;
+        const d = Math.floor((Date.now() - new Date(a.ad_delivery_start_time).getTime()) / 86400000);
+        return d >= f.runTime;
+      });
+    }
+    if (f.sortBy === "running") {
+      out.sort((a, b) => {
+        const aT = a.ad_delivery_start_time ? new Date(a.ad_delivery_start_time).getTime() : 0;
+        const bT = b.ad_delivery_start_time ? new Date(b.ad_delivery_start_time).getTime() : 0;
+        return aT - bT;
+      });
+    }
+    return out;
+  }, []);
+
+  async function fetchAds(cursor = "", currentFilters = filters) {
     if (!query.trim()) return;
     setLoading(true);
     setError("");
 
     const params = new URLSearchParams({
       q: query.trim(),
-      country,
-      status,
-      limit: "30",
+      country: currentFilters.countries[0] ?? "US",
+      status: currentFilters.status,
+      limit: "40",
     });
     if (cursor) params.set("after", cursor);
 
     try {
       const res = await fetch(`/api/ads?${params}`);
       const data = await res.json();
+      if (data.error) { setError(data.error); return; }
 
-      if (data.error) {
-        setError(data.error);
-        return;
-      }
-
-      let results: Ad[] = data.data ?? [];
-
-      // Sort by running time (longest first = best performing)
-      if (sortBy === "running") {
-        results = results.sort((a, b) => {
-          const aStart = a.ad_delivery_start_time ? new Date(a.ad_delivery_start_time).getTime() : 0;
-          const bStart = b.ad_delivery_start_time ? new Date(b.ad_delivery_start_time).getTime() : 0;
-          return aStart - bStart; // oldest start = longest running
-        });
-      }
-
+      const filtered = applyFilters(data.data ?? [], currentFilters);
       if (cursor) {
-        setAds((prev) => [...prev, ...results]);
+        setAds(prev => [...prev, ...filtered]);
+        setTotalCount(prev => prev + filtered.length);
       } else {
-        setAds(results);
+        setAds(filtered);
+        setTotalCount(filtered.length);
       }
-
       setNextCursor(data.paging?.cursors?.after ?? "");
       setSearched(true);
     } catch {
-      setError("Something went wrong. Check your connection.");
+      setError("Connection error. Check your network.");
     } finally {
       setLoading(false);
     }
@@ -91,173 +82,101 @@ export default function SearchPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setNextCursor("");
-    fetchAds();
+    fetchAds("", filters);
+  };
+
+  const handleFilterChange = (f: Filters) => {
+    setFilters(f);
+    if (searched) {
+      setNextCursor("");
+      fetchAds("", f);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    background: "#111115", border: "1px solid #1e1e23", borderRadius: "8px",
+    color: "#fafafa", fontSize: "1rem", padding: "0.7rem 1rem", outline: "none",
+    flex: 1, transition: "border-color 0.15s",
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, margin: 0, color: "#fafafa" }}>
-          Search Ads
-        </h1>
-        <p style={{ color: "#71717a", margin: "0.25rem 0 0", fontSize: "0.875rem" }}>
-          Search Facebook & Instagram ads by keyword or niche. Longer-running ads = winning ads.
-        </p>
-      </div>
+    <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
+      <FilterSidebar filters={filters} onChange={handleFilterChange} />
 
-      {/* Search form */}
-      <form onSubmit={handleSearch} style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
-        {/* Main search bar */}
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Header */}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <h1 style={{ fontSize: "1.375rem", fontWeight: 700, margin: 0, color: "#fafafa" }}>Search Ads</h1>
+          <p style={{ color: "#52525b", margin: "0.2rem 0 0", fontSize: "0.8rem" }}>
+            Search Facebook & Instagram ads. Longest-running ads = winners.
+          </p>
+        </div>
+
+        {/* Search bar */}
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
           <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder='e.g. "weight loss supplement" or "dropshipping"'
-            style={{
-              ...inputStyle,
-              flex: 1,
-              fontSize: "1rem",
-              padding: "0.625rem 1rem",
-            }}
+            type="text" value={query} onChange={e => setQuery(e.target.value)}
+            placeholder='e.g. "weight loss" or "skincare routine"'
+            style={inputStyle}
+            onFocus={e => (e.target as HTMLInputElement).style.borderColor = "#22c55e"}
+            onBlur={e => (e.target as HTMLInputElement).style.borderColor = "#1e1e23"}
           />
-          <button
-            type="submit"
-            disabled={loading || !query.trim()}
-            style={{
-              background: loading || !query.trim() ? "#27272a" : "#3b82f6",
-              border: "none",
-              borderRadius: "8px",
-              color: "#fff",
-              cursor: loading || !query.trim() ? "not-allowed" : "pointer",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              padding: "0.625rem 1.5rem",
-              transition: "background 0.15s",
-            }}
-          >
-            {loading ? "Searching..." : "Search"}
+          <button type="submit" disabled={loading || !query.trim()} style={{
+            background: loading || !query.trim() ? "#1e1e23" : "#22c55e",
+            border: "none", borderRadius: "8px",
+            color: loading || !query.trim() ? "#52525b" : "#000",
+            cursor: loading || !query.trim() ? "not-allowed" : "pointer",
+            fontSize: "0.875rem", fontWeight: 700, padding: "0.7rem 1.5rem",
+            transition: "all 0.15s",
+          }}>
+            {loading ? "Searching…" : "Search"}
           </button>
+        </form>
+
+        {/* Results count */}
+        {searched && !loading && (
+          <div style={{ fontSize: "0.75rem", color: "#52525b", marginBottom: "0.75rem" }}>
+            {totalCount} ads found
+            {filters.runTime > 0 && ` · ${filters.runTime}+ days running`}
+            {filters.platforms.length > 0 && ` · ${filters.platforms.join(", ")}`}
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div style={{ background: "#450a0a", border: "1px solid #7f1d1d", borderRadius: "8px", color: "#fca5a5", fontSize: "0.8rem", padding: "0.75rem 1rem", marginBottom: "1rem" }}>
+            {error}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {searched && !loading && ads.length === 0 && !error && (
+          <div style={{ textAlign: "center", color: "#3f3f46", padding: "4rem 0", fontSize: "0.875rem" }}>
+            No ads found. Try a different keyword or adjust filters.
+          </div>
+        )}
+
+        {!searched && !loading && (
+          <div style={{ textAlign: "center", color: "#27272a", padding: "5rem 0", fontSize: "0.875rem" }}>
+            Search any keyword to find ads
+          </div>
+        )}
+
+        {/* Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0.875rem" }}>
+          {ads.map(ad => <AdCard key={ad.id} ad={ad} />)}
         </div>
 
-        {/* Filters row */}
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            style={selectStyle}
-          >
-            {COUNTRIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            style={selectStyle}
-          >
-            <option value="ACTIVE">Active Ads Only</option>
-            <option value="ALL">Active + Inactive</option>
-            <option value="INACTIVE">Inactive Only</option>
-          </select>
-
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={selectStyle}
-          >
-            <option value="running">Sort: Longest Running First</option>
-            <option value="recent">Sort: Most Recent First</option>
-          </select>
-        </div>
-      </form>
-
-      {/* Error */}
-      {error && (
-        <div
-          style={{
-            background: "#450a0a",
-            border: "1px solid #7f1d1d",
-            borderRadius: "8px",
-            color: "#fca5a5",
-            fontSize: "0.875rem",
-            padding: "0.75rem 1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          {error.includes("META_ACCESS_TOKEN") ? (
-            <>
-              <strong>Setup needed:</strong> Add your Meta access token to <code>.env.local</code>.{" "}
-              See <code>SETUP.md</code> for instructions.
-            </>
-          ) : (
-            error
-          )}
-        </div>
-      )}
-
-      {/* Results */}
-      {searched && !loading && ads.length === 0 && !error && (
-        <div style={{ textAlign: "center", color: "#52525b", padding: "3rem 0", fontSize: "0.875rem" }}>
-          No ads found. Try a different keyword or change the filters.
-        </div>
-      )}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "1rem",
-        }}
-      >
-        {ads.map((ad) => (
-          <AdCard key={ad.id} ad={ad} />
-        ))}
+        {/* Load more */}
+        {nextCursor && !loading && (
+          <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            <button onClick={() => fetchAds(nextCursor)} style={{ background: "#18181b", border: "1px solid #27272a", borderRadius: "8px", color: "#71717a", cursor: "pointer", fontSize: "0.875rem", padding: "0.625rem 2rem" }}>
+              Load More
+            </button>
+          </div>
+        )}
+        {loading && ads.length > 0 && <div style={{ textAlign: "center", marginTop: "1rem", color: "#3f3f46", fontSize: "0.8rem" }}>Loading…</div>}
       </div>
-
-      {/* Load more */}
-      {nextCursor && !loading && (
-        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-          <button
-            onClick={() => fetchAds(nextCursor)}
-            style={{
-              background: "#27272a",
-              border: "1px solid #3f3f46",
-              borderRadius: "8px",
-              color: "#a1a1aa",
-              cursor: "pointer",
-              fontSize: "0.875rem",
-              padding: "0.625rem 1.5rem",
-            }}
-          >
-            Load More
-          </button>
-        </div>
-      )}
-
-      {loading && ads.length > 0 && (
-        <div style={{ textAlign: "center", marginTop: "1rem", color: "#52525b", fontSize: "0.875rem" }}>
-          Loading more...
-        </div>
-      )}
-
-      {!searched && !loading && (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#3f3f46",
-            padding: "5rem 0",
-            fontSize: "0.875rem",
-          }}
-        >
-          Search any keyword to find ads
-        </div>
-      )}
     </div>
   );
 }

@@ -5,209 +5,165 @@ import { saveAd, removeAd, isSaved } from "@/lib/swipeStorage";
 
 function daysRunning(start?: string): number | null {
   if (!start) return null;
-  const ms = Date.now() - new Date(start).getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
+  return Math.floor((Date.now() - new Date(start).getTime()) / 86400000);
 }
 
-function runningColor(days: number | null): string {
-  if (days === null) return "#52525b";
-  if (days >= 60) return "#22c55e";
-  if (days >= 30) return "#f59e0b";
-  return "#71717a";
+function stars(days: number | null): number {
+  if (!days) return 1;
+  if (days >= 90) return 5;
+  if (days >= 60) return 4;
+  if (days >= 30) return 3;
+  if (days >= 14) return 2;
+  return 1;
 }
 
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return "Unknown";
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+function fmt(n: string | undefined): string {
+  if (!n) return "—";
+  const num = parseInt(n);
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+  if (num >= 1000) return (num / 1000).toFixed(0) + "K";
+  return n;
 }
 
-interface Props {
-  ad: Ad;
-  onRemove?: () => void;
+function brandColor(name: string): string {
+  const palette = ["#ef4444","#f97316","#eab308","#22c55e","#14b8a6","#3b82f6","#8b5cf6","#ec4899"];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return palette[Math.abs(h) % palette.length];
 }
+
+function formatDate(d?: string): string {
+  if (!d) return "Unknown";
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+interface Props { ad: Ad; onRemove?: () => void; }
 
 export default function AdCard({ ad, onRemove }: Props) {
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    setSaved(isSaved(ad.id));
-  }, [ad.id]);
+  useEffect(() => { setSaved(isSaved(ad.id)); }, [ad.id]);
 
   const toggle = () => {
-    if (saved) {
-      removeAd(ad.id);
-      setSaved(false);
-      onRemove?.();
-    } else {
-      saveAd(ad);
-      setSaved(true);
-    }
+    if (saved) { removeAd(ad.id); setSaved(false); onRemove?.(); }
+    else { saveAd(ad); setSaved(true); }
   };
 
   const days = daysRunning(ad.ad_delivery_start_time);
-  const color = runningColor(days);
+  const rating = stars(days);
   const body = ad.ad_creative_bodies?.[0] ?? "";
   const title = ad.ad_creative_link_titles?.[0] ?? "";
+  const caption = ad.ad_creative_link_captions?.[0] ?? "";
   const platforms = ad.publisher_platforms ?? [];
   const isActive = !ad.ad_delivery_stop_time;
+  const color = brandColor(ad.page_name);
+  const initial = (ad.page_name || "?")[0].toUpperCase();
+  const impressions = ad.impressions?.lower_bound;
 
   return (
-    <div
-      style={{
-        background: "#18181b",
-        border: "1px solid #27272a",
-        borderRadius: "10px",
-        padding: "1rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.75rem",
-        transition: "border-color 0.15s",
-      }}
-      onMouseEnter={(e) =>
-        ((e.currentTarget as HTMLElement).style.borderColor = "#3f3f46")
-      }
-      onMouseLeave={(e) =>
-        ((e.currentTarget as HTMLElement).style.borderColor = "#27272a")
-      }
+    <div style={{
+      background: "#111115", border: "1px solid #1e1e23", borderRadius: "12px",
+      display: "flex", flexDirection: "column", overflow: "hidden",
+      transition: "border-color 0.15s, transform 0.15s",
+    }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#22c55e40"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#1e1e23"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
     >
-      {/* Header row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", flex: 1, minWidth: 0 }}>
-          <span
-            style={{
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: "#fafafa",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {ad.page_name || "Unknown Advertiser"}
-          </span>
-          {/* Platform badges */}
-          <div style={{ display: "flex", gap: "0.25rem" }}>
-            {platforms.includes("facebook") && (
-              <span style={{ fontSize: "0.65rem", padding: "1px 6px", borderRadius: "4px", background: "#1d4ed8", color: "#bfdbfe", fontWeight: 600 }}>
-                FB
-              </span>
-            )}
-            {platforms.includes("instagram") && (
-              <span style={{ fontSize: "0.65rem", padding: "1px 6px", borderRadius: "4px", background: "#7c3aed", color: "#ddd6fe", fontWeight: 600 }}>
-                IG
-              </span>
-            )}
-            {isActive && (
-              <span style={{ fontSize: "0.65rem", padding: "1px 6px", borderRadius: "4px", background: "#14532d", color: "#86efac", fontWeight: 600 }}>
-                ACTIVE
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Save button */}
-        <button
-          onClick={toggle}
-          title={saved ? "Remove from swipe file" : "Save to swipe file"}
-          style={{
-            background: saved ? "#14532d" : "#27272a",
-            border: "none",
-            borderRadius: "6px",
-            color: saved ? "#22c55e" : "#a1a1aa",
-            cursor: "pointer",
-            fontSize: "1rem",
-            padding: "0.375rem 0.5rem",
-            lineHeight: 1,
-            flexShrink: 0,
-            transition: "all 0.15s",
-          }}
-        >
-          {saved ? "★" : "☆"}
-        </button>
-      </div>
-
-      {/* Ad title */}
-      {title && (
-        <p style={{ margin: 0, fontSize: "0.8rem", fontWeight: 600, color: "#d4d4d8" }}>
-          {title}
-        </p>
-      )}
-
-      {/* Ad body */}
-      {body ? (
-        <p
-          style={{
-            margin: 0,
-            fontSize: "0.8rem",
-            color: "#a1a1aa",
-            lineHeight: 1.5,
-            display: "-webkit-box",
-            WebkitLineClamp: 4,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {body}
-        </p>
-      ) : (
-        <p style={{ margin: 0, fontSize: "0.8rem", color: "#52525b", fontStyle: "italic" }}>
-          No copy preview available
-        </p>
-      )}
-
-      {/* Running time */}
-      <div
-        style={{
-          borderTop: "1px solid #27272a",
-          paddingTop: "0.625rem",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          {days !== null ? (
-            <span style={{ fontSize: "0.8rem", color, fontWeight: 600 }}>
-              {days >= 60 ? "🔥 " : ""}Running {days}d
-            </span>
-          ) : (
-            <span style={{ fontSize: "0.8rem", color: "#52525b" }}>
-              Started {formatDate(ad.ad_delivery_start_time)}
+      {/* Metrics row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.625rem 0.875rem 0", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          {impressions && (
+            <span style={{ fontSize: "0.7rem", color: "#71717a", display: "flex", alignItems: "center", gap: "0.2rem" }}>
+              <span>👁</span> {fmt(impressions)}
             </span>
           )}
-          <div style={{ fontSize: "0.7rem", color: "#52525b", marginTop: "1px" }}>
-            Since {formatDate(ad.ad_delivery_start_time)}
+          <span style={{ fontSize: "0.7rem", color: "#71717a" }}>
+            {days !== null ? `${days}d` : "New"}
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: "1px" }}>
+          {[1,2,3,4,5].map(s => (
+            <span key={s} style={{ fontSize: "0.65rem", color: s <= rating ? "#22c55e" : "#27272a" }}>★</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Brand row */}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", padding: "0.5rem 0.875rem 0.625rem" }}>
+        <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "0.75rem", fontWeight: 700, color: "#fff" }}>
+          {initial}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "#fafafa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {ad.page_name}
+          </div>
+          <div style={{ fontSize: "0.7rem", color: "#52525b", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <span style={{ color: isActive ? "#22c55e" : "#71717a", fontSize: "0.55rem" }}>●</span>
+            {formatDate(ad.ad_delivery_start_time)} – {isActive ? "Present" : formatDate(ad.ad_delivery_stop_time)}
+            {days !== null && <span style={{ color: "#3f3f46" }}>&nbsp;{days}d</span>}
           </div>
         </div>
+        {/* Platform badges */}
+        <div style={{ display: "flex", gap: "0.2rem" }}>
+          {platforms.includes("facebook") && <span style={{ fontSize: "0.6rem", padding: "1px 5px", borderRadius: "3px", background: "#1d4ed820", color: "#93c5fd", border: "1px solid #1d4ed840" }}>FB</span>}
+          {platforms.includes("instagram") && <span style={{ fontSize: "0.6rem", padding: "1px 5px", borderRadius: "3px", background: "#7c3aed20", color: "#c4b5fd", border: "1px solid #7c3aed40" }}>IG</span>}
+        </div>
+      </div>
 
-        {ad.ad_snapshot_url && (
-          <a
-            href={ad.ad_snapshot_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontSize: "0.75rem",
-              color: "#3b82f6",
-              textDecoration: "none",
-              padding: "0.25rem 0.625rem",
-              border: "1px solid #1d4ed8",
-              borderRadius: "5px",
-              transition: "background 0.15s",
-            }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "#1e3a5f")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLElement).style.background = "transparent")
-            }
-          >
-            View Ad ↗
-          </a>
+      {/* Creative area */}
+      <div style={{
+        margin: "0 0.875rem", borderRadius: "8px", background: "#0d0d10",
+        border: "1px solid #1e1e23", padding: "1rem", minHeight: "140px",
+        display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "0.5rem",
+        position: "relative", overflow: "hidden",
+      }}>
+        {/* Subtle gradient accent */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, ${color}80, transparent)` }} />
+
+        {title && (
+          <p style={{ margin: 0, fontSize: "0.8rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.4 }}>
+            {title.length > 80 ? title.slice(0, 80) + "…" : title}
+          </p>
         )}
+
+        {body && (
+          <p style={{ margin: 0, fontSize: "0.75rem", color: "#71717a", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {body}
+          </p>
+        )}
+
+        {!title && !body && (
+          <p style={{ margin: 0, fontSize: "0.75rem", color: "#3f3f46", fontStyle: "italic" }}>No copy preview</p>
+        )}
+
+        {caption && (
+          <div style={{ fontSize: "0.65rem", color: "#22c55e", background: "#22c55e10", padding: "0.2rem 0.5rem", borderRadius: "4px", alignSelf: "flex-start", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {caption}
+          </div>
+        )}
+      </div>
+
+      {/* Action bar */}
+      <div style={{ display: "flex", gap: "0.5rem", padding: "0.75rem 0.875rem", marginTop: "auto" }}>
+        {ad.ad_snapshot_url ? (
+          <a href={ad.ad_snapshot_url} target="_blank" rel="noopener noreferrer"
+            style={{ flex: 1, textAlign: "center", fontSize: "0.75rem", color: "#a1a1aa", padding: "0.4rem 0", border: "1px solid #27272a", borderRadius: "6px", textDecoration: "none", transition: "all 0.15s" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#3f3f46"; (e.currentTarget as HTMLElement).style.color = "#fafafa"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#27272a"; (e.currentTarget as HTMLElement).style.color = "#a1a1aa"; }}
+          >
+            Details ↗
+          </a>
+        ) : <div style={{ flex: 1 }} />}
+
+        <button onClick={toggle}
+          style={{
+            flex: 1, fontSize: "0.75rem", fontWeight: 600, padding: "0.4rem 0",
+            border: "none", borderRadius: "6px", cursor: "pointer", transition: "all 0.15s",
+            background: saved ? "#22c55e" : "#22c55e20",
+            color: saved ? "#000" : "#22c55e",
+          }}
+        >
+          {saved ? "★ Saved" : "☆ Save"}
+        </button>
       </div>
     </div>
   );

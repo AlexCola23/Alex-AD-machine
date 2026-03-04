@@ -30,3 +30,11 @@ export interface AdsApiResponse {
   paging?: Paging;
   error?: string;
 }
+
+export interface Filters {
+  countries: string[];
+  status: string;
+  platforms: string[];
+  runTime: number;
+  sortBy: "running" | "recent";
+}
