@@ -10,6 +10,7 @@ const COUNTRIES = [
   { value: "AU", label: "🇦🇺 Australia" },
   { value: "DE", label: "🇩🇪 Germany" },
   { value: "FR", label: "🇫🇷 France" },
+  { value: "NL", label: "🇳🇱 Netherlands" },
 ];
 
 const inputStyle: React.CSSProperties = {

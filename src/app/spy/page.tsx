@@ -20,6 +20,7 @@ const COUNTRIES = [
   { value: "AU", label: "🇦🇺 Australia" },
   { value: "DE", label: "🇩🇪 Germany" },
   { value: "FR", label: "🇫🇷 France" },
+  { value: "NL", label: "🇳🇱 Netherlands" },
 ];
 
 export default function SpyPage() {
