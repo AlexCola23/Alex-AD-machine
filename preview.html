@@ -1,409 +1,418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AdVault — Preview</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdVault</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #09090b; color: #fafafa; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#09090b;color:#fafafa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;min-height:100vh;font-size:14px}
 
-  /* NAV */
-  nav { background: #111115; border-bottom: 1px solid #27272a; position: sticky; top: 0; z-index: 50; }
-  .nav-inner { max-width: 80rem; margin: 0 auto; padding: 0 1rem; display: flex; align-items: center; gap: 2rem; height: 56px; }
-  .logo { font-size: 1.125rem; font-weight: 700; color: #3b82f6; letter-spacing: -0.02em; cursor: pointer; }
-  .nav-links { display: flex; gap: 0.25rem; }
-  .nav-link { padding: 0.375rem 0.875rem; border-radius: 6px; font-size: 0.875rem; color: #a1a1aa; cursor: pointer; transition: all 0.15s; background: transparent; border: none; }
-  .nav-link:hover { color: #fafafa; background: #1e1e22; }
-  .nav-link.active { color: #fafafa; background: #27272a; font-weight: 600; }
+.nav{position:sticky;top:0;z-index:100;background:#09090b;border-bottom:1px solid #1e1e23;padding:0 1.5rem;display:flex;align-items:center;height:52px;gap:0}
+.nav-logo{font-weight:800;font-size:1rem;color:#22c55e;margin-right:2rem;letter-spacing:-0.02em}
+.nav-btn{padding:.45rem 1rem;font-size:.8rem;color:#71717a;cursor:pointer;border-radius:6px;border:none;background:none;transition:all .15s}
+.nav-btn:hover{color:#fafafa}
+.nav-btn.active{color:#fafafa;background:#18181b}
+.nav-spacer{flex:1}
+.tok-btn{font-size:.7rem;color:#3f3f46;cursor:pointer;background:none;border:none;padding:.25rem .5rem;transition:color .15s}
+.tok-btn:hover{color:#71717a}
 
-  /* PAGES */
-  .page { display: none; max-width: 80rem; margin: 0 auto; padding: 2rem 1rem; }
-  .page.active { display: block; }
+.page{display:none}
+.page.active{display:flex;gap:1.25rem;align-items:flex-start;padding:1.25rem 1.5rem;max-width:1440px;margin:0 auto}
 
-  /* HEADINGS */
-  h1 { font-size: 1.5rem; font-weight: 700; color: #fafafa; }
-  .subtitle { color: #71717a; margin-top: 0.25rem; font-size: 0.875rem; }
+aside{width:220px;flex-shrink:0;background:#111115;border:1px solid #1e1e23;border-radius:10px;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto}
+.sb-head{padding:.875rem 1rem;border-bottom:1px solid #1e1e23;display:flex;justify-content:space-between;align-items:center}
+.sb-title{font-size:.875rem;font-weight:700;color:#fafafa}
+.reset-btn{font-size:.7rem;color:#22c55e;background:none;border:none;cursor:pointer}
+.section{border-bottom:1px solid #1e1e23}
+.sec-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:none;border:none;color:#e4e4e7;font-size:.8rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:.05em}
+.sec-body{padding:0 1rem .75rem}
+.sec-search{width:100%;background:#18181b;border:1px solid #27272a;border-radius:6px;color:#fafafa;font-size:.75rem;padding:.375rem .5rem;outline:none;margin-bottom:.5rem}
+.opt{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.25rem 0;font-size:.8rem}
+.opt-box{width:15px;height:15px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.opt-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0}
 
-  /* SEARCH BAR */
-  .search-wrap { margin: 1.5rem 0; display: flex; flex-direction: column; gap: 0.75rem; }
-  .search-row { display: flex; gap: 0.5rem; }
-  .filters-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  input[type=text] { background: #18181b; border: 1px solid #27272a; border-radius: 8px; color: #fafafa; font-size: 1rem; padding: 0.625rem 1rem; outline: none; flex: 1; transition: border-color 0.15s; }
-  input[type=text]:focus { border-color: #3b82f6; }
-  input[type=text]::placeholder { color: #52525b; }
-  select { background: #18181b; border: 1px solid #27272a; border-radius: 8px; color: #fafafa; font-size: 0.875rem; padding: 0.5rem 0.75rem; outline: none; cursor: pointer; }
-  .btn-primary { background: #3b82f6; border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 0.625rem 1.5rem; transition: background 0.15s; }
-  .btn-primary:hover { background: #2563eb; }
+.main{flex:1;min-width:0}
+.ph{margin-bottom:1.25rem}
+.pt{font-size:1.375rem;font-weight:700;color:#fafafa}
+.ps{color:#52525b;font-size:.8rem;margin-top:.2rem}
+.sform{display:flex;gap:.5rem;margin-bottom:1rem}
+.sinput{background:#111115;border:1px solid #1e1e23;border-radius:8px;color:#fafafa;font-size:1rem;padding:.7rem 1rem;outline:none;flex:1;transition:border-color .15s}
+.sinput:focus{border-color:#22c55e}
+.sbtn{background:#22c55e;border:none;border-radius:8px;color:#000;cursor:pointer;font-size:.875rem;font-weight:700;padding:.7rem 1.5rem;transition:all .15s;white-space:nowrap}
+.sbtn:disabled{background:#1e1e23;color:#52525b;cursor:not-allowed}
+.rcount{font-size:.75rem;color:#52525b;margin-bottom:.75rem}
+.errbox{background:#450a0a;border:1px solid #7f1d1d;border-radius:8px;color:#fca5a5;font-size:.8rem;padding:.75rem 1rem;margin-bottom:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.875rem}
+.empty{text-align:center;color:#3f3f46;padding:5rem 0;font-size:.875rem;grid-column:1/-1}
 
-  /* AD GRID */
-  .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+.acard{background:#111115;border:1px solid #1e1e23;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;transition:border-color .15s,transform .15s}
+.acard:hover{border-color:rgba(34,197,94,.25);transform:translateY(-1px)}
+.cm{display:flex;justify-content:space-between;align-items:center;padding:.625rem .875rem 0}
+.cbrand{display:flex;align-items:center;gap:.625rem;padding:.5rem .875rem .625rem}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.75rem;font-weight:700;color:#fff}
+.bname{font-size:.8rem;font-weight:600;color:#fafafa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bdate{font-size:.7rem;color:#52525b;display:flex;align-items:center;gap:.25rem;margin-top:.1rem}
+.pbadges{display:flex;gap:.2rem}
+.pfb{font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(29,78,216,.125);color:#93c5fd;border:1px solid rgba(29,78,216,.25)}
+.pig{font-size:.6rem;padding:1px 5px;border-radius:3px;background:rgba(124,58,237,.125);color:#c4b5fd;border:1px solid rgba(124,58,237,.25)}
+.creative{margin:0 .875rem;border-radius:8px;overflow:hidden;background:#0d0d10;border:1px solid #1e1e23;min-height:180px;position:relative;display:flex;align-items:center;justify-content:center}
+.ctext{padding:1rem;width:100%;position:relative}
+.caccent{position:absolute;top:0;left:0;right:0;height:2px}
+.ctitle{font-size:.8rem;font-weight:700;color:#e4e4e7;line-height:1.4;margin-bottom:.5rem}
+.cbody{font-size:.75rem;color:#71717a;line-height:1.5;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.ccap{margin-top:.5rem;font-size:.65rem;color:#22c55e;background:rgba(34,197,94,.0625);padding:.2rem .5rem;border-radius:4px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccopy{padding:.625rem .875rem 0}
+.cct{font-size:.78rem;font-weight:700;color:#e4e4e7;line-height:1.3;margin-bottom:.25rem}
+.ccb{font-size:.72rem;color:#71717a;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cactions{display:flex;gap:.5rem;padding:.75rem .875rem;margin-top:auto}
+.viewbtn{flex:1;text-align:center;font-size:.75rem;color:#a1a1aa;padding:.4rem 0;border:1px solid #27272a;border-radius:6px;text-decoration:none;cursor:pointer;background:none;transition:all .15s}
+.viewbtn:hover{border-color:#3f3f46;color:#fafafa}
+.savebtn{flex:1;font-size:.75rem;font-weight:600;padding:.4rem 0;border:none;border-radius:6px;cursor:pointer;transition:all .15s}
 
-  /* AD CARD */
-  .ad-card { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; transition: border-color 0.15s; }
-  .ad-card:hover { border-color: #3f3f46; }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
-  .advertiser { font-weight: 600; font-size: 0.875rem; color: #fafafa; }
-  .badges { display: flex; gap: 0.25rem; margin-top: 0.25rem; flex-wrap: wrap; }
-  .badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
-  .badge-fb { background: #1d4ed8; color: #bfdbfe; }
-  .badge-ig { background: #7c3aed; color: #ddd6fe; }
-  .badge-active { background: #14532d; color: #86efac; }
-  .save-btn { background: #27272a; border: none; border-radius: 6px; color: #a1a1aa; cursor: pointer; font-size: 1rem; padding: 0.375rem 0.5rem; line-height: 1; transition: all 0.15s; flex-shrink: 0; }
-  .save-btn:hover { background: #14532d; color: #22c55e; }
-  .save-btn.saved { background: #14532d; color: #22c55e; }
-  .ad-title { font-size: 0.8rem; font-weight: 600; color: #d4d4d8; }
-  .ad-body { font-size: 0.8rem; color: #a1a1aa; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-footer { border-top: 1px solid #27272a; padding-top: 0.625rem; display: flex; justify-content: space-between; align-items: center; }
-  .running-days { font-size: 0.8rem; font-weight: 600; }
-  .running-since { font-size: 0.7rem; color: #52525b; margin-top: 1px; }
-  .view-btn { font-size: 0.75rem; color: #3b82f6; text-decoration: none; padding: 0.25rem 0.625rem; border: 1px solid #1d4ed8; border-radius: 5px; transition: background 0.15s; }
-  .view-btn:hover { background: #1e3a5f; }
+.spy-stats{display:flex;gap:1rem;margin-bottom:1.25rem}
+.sstat{background:#111115;border:1px solid #1e1e23;border-radius:8px;padding:.75rem 1.25rem}
+.sec-lbl{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.swfilters{display:flex;gap:.5rem;margin-bottom:1rem;align-items:center}
+.swfbtn{font-size:.75rem;padding:.375rem .875rem;border-radius:6px;border:1px solid #27272a;background:none;color:#71717a;cursor:pointer;transition:all .15s}
+.swfbtn.active,.swfbtn:hover{background:#22c55e;color:#000;border-color:#22c55e}
+.expbtn{margin-left:auto;font-size:.75rem;padding:.375rem .875rem;border-radius:6px;border:1px solid #27272a;background:none;color:#71717a;cursor:pointer}
+.expbtn:hover{border-color:#3f3f46;color:#fafafa}
+.lmwrap{text-align:center;margin-top:1.5rem}
+.lmbtn{background:#18181b;border:1px solid #27272a;border-radius:8px;color:#71717a;cursor:pointer;font-size:.875rem;padding:.625rem 2rem}
+.lmbtn:hover{border-color:#3f3f46;color:#fafafa}
 
-  /* STATS BAR */
-  .stats-bar { background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 0.875rem 1rem; margin-bottom: 1.25rem; display: flex; gap: 2rem; flex-wrap: wrap; }
-  .stat-val { font-size: 1.25rem; font-weight: 700; color: #fafafa; }
-  .stat-val.green { color: #22c55e; }
-  .stat-label { font-size: 0.75rem; color: #71717a; }
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel{background:linear-gradient(90deg,#111115 25%,#1a1a1f 50%,#111115 75%);background-size:200% 100%;animation:skel 1.4s ease infinite}
 
-  /* SECTION LABEL */
-  .section-label { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.75rem; }
-  .section-label.green { color: #22c55e; }
-  .section-label.muted { color: #71717a; }
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:flex;align-items:center;justify-content:center}
+.modal{background:#111115;border:1px solid #1e1e23;border-radius:12px;padding:2rem;width:90%;max-width:480px}
+.modal h2{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+.modal p{font-size:.8rem;color:#52525b;margin-bottom:1.25rem;line-height:1.6}
+.modal input{width:100%;background:#18181b;border:1px solid #27272a;border-radius:8px;color:#fafafa;font-size:.875rem;padding:.7rem 1rem;outline:none;margin-bottom:1rem}
+.modal button{width:100%;background:#22c55e;border:none;border-radius:8px;color:#000;cursor:pointer;font-size:.875rem;font-weight:700;padding:.75rem}
 
-  /* SWIPE FILE */
-  .swipe-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-  .filter-group { display: flex; gap: 0.375rem; }
-  .filter-btn { background: transparent; border: 1px solid #27272a; border-radius: 6px; color: #71717a; cursor: pointer; font-size: 0.8rem; padding: 0.375rem 0.75rem; transition: all 0.15s; }
-  .filter-btn.active { background: #27272a; border-color: #3f3f46; color: #fafafa; font-weight: 600; }
-  .swipe-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #27272a; display: flex; justify-content: space-between; align-items: center; }
-  .export-btn { background: transparent; border: 1px solid #27272a; border-radius: 6px; color: #71717a; cursor: pointer; font-size: 0.75rem; padding: 0.375rem 0.75rem; }
-
-  /* EMPTY STATE */
-  .empty { text-align: center; color: #52525b; padding: 5rem 0; font-size: 0.875rem; }
-  .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-
-  /* PENDING NOTICE */
-  .notice { background: #1c1917; border: 1px solid #78350f; border-radius: 8px; color: #fcd34d; font-size: 0.875rem; padding: 0.875rem 1rem; margin-bottom: 1.5rem; }
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#09090b}
+::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-inner">
-    <span class="logo">AdVault</span>
-    <div class="nav-links">
-      <button class="nav-link active" onclick="showPage('search', this)">Search Ads</button>
-      <button class="nav-link" onclick="showPage('spy', this)">Competitor Spy</button>
-      <button class="nav-link" onclick="showPage('swipe', this)">Swipe File</button>
-    </div>
+<div class="modal-bg" id="tokenModal" style="display:none">
+  <div class="modal">
+    <h2>Enter Meta Access Token</h2>
+    <p>Paste your token from the <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:#22c55e">Graph API Explorer</a> with <code>ads_read</code> permission. Saved locally in your browser.</p>
+    <input id="tokenInput" type="text" placeholder="EAAcko..." />
+    <button onclick="saveToken()">Save &amp; Load Ads</button>
   </div>
+</div>
+
+<nav class="nav">
+  <span class="nav-logo">AdVault</span>
+  <button class="nav-btn active" onclick="goPage('search',this)">Search Ads</button>
+  <button class="nav-btn" onclick="goPage('spy',this)">Competitor Spy</button>
+  <button class="nav-btn" onclick="goPage('swipe',this)">Swipe File</button>
+  <span class="nav-spacer"></span>
+  <button class="tok-btn" onclick="openModal()">⚙ Token</button>
 </nav>
 
-<!-- ========== SEARCH PAGE ========== -->
+<!-- SEARCH -->
 <div class="page active" id="page-search">
-  <h1>Search Ads</h1>
-  <p class="subtitle">Search Facebook & Instagram ads by keyword or niche. Longer-running ads = winning ads.</p>
-
-  <div class="notice">⏳ Meta identity review pending — search will be live once approved. Here's a preview of the UI.</div>
-
-  <div class="search-wrap">
-    <div class="search-row">
-      <input type="text" placeholder='"weight loss supplement" or "dropshipping"' />
-      <button class="btn-primary">Search</button>
-    </div>
-    <div class="filters-row">
-      <select><option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option><option>🇨🇦 Canada</option><option>🇦🇺 Australia</option></select>
-      <select><option>Active Ads Only</option><option>Active + Inactive</option><option>Inactive Only</option></select>
-      <select><option>Sort: Longest Running First</option><option>Sort: Most Recent First</option></select>
-    </div>
-  </div>
-
-  <div class="ad-grid">
-    <!-- CARD 1 -->
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Athletic Greens</div>
-          <div class="badges">
-            <span class="badge badge-fb">FB</span>
-            <span class="badge badge-ig">IG</span>
-            <span class="badge badge-active">ACTIVE</span>
-          </div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">The All-In-One Daily Health Drink</p>
-      <p class="ad-body">AG1 contains 75 high-quality vitamins, minerals, whole-food sourced superfoods, probiotics, and adaptogens to help you start your day right. Just one scoop a day covers your nutritional bases so you can focus on what matters most.</p>
-      <div class="card-footer">
-        <div>
-          <div class="running-days" style="color:#22c55e">🔥 Running 187d</div>
-          <div class="running-since">Since Aug 29, 2024</div>
-        </div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <!-- CARD 2 -->
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Manscaped</div>
-          <div class="badges">
-            <span class="badge badge-fb">FB</span>
-            <span class="badge badge-active">ACTIVE</span>
-          </div>
-        </div>
-        <button class="save-btn saved" onclick="toggleSave(this)">★</button>
-      </div>
-      <p class="ad-title">Below the Belt Grooming — Finally Done Right</p>
-      <p class="ad-body">Stop settling for cheap razors. The Lawn Mower 5.0 Ultra is engineered with SkinSafe™ technology so you get a perfect shave every time with zero nicks. Free shipping + free gift with every order over $50.</p>
-      <div class="card-footer">
-        <div>
-          <div class="running-days" style="color:#22c55e">🔥 Running 142d</div>
-          <div class="running-since">Since Oct 13, 2024</div>
-        </div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <!-- CARD 3 -->
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Hims</div>
-          <div class="badges">
-            <span class="badge badge-ig">IG</span>
-            <span class="badge badge-active">ACTIVE</span>
-          </div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">Hair Loss Doesn't Have to Be Forever</p>
-      <p class="ad-body">9 out of 10 men who use Hims keep their hair. Get FDA-approved finasteride delivered to your door, no awkward doctor visit needed. Start for $0 — first month free when you subscribe today.</p>
-      <div class="card-footer">
-        <div>
-          <div class="running-days" style="color:#f59e0b">Running 54d</div>
-          <div class="running-since">Since Jan 8, 2025</div>
-        </div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <!-- CARD 4 -->
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">DUDE Wipes</div>
-          <div class="badges">
-            <span class="badge badge-fb">FB</span>
-            <span class="badge badge-ig">IG</span>
-            <span class="badge badge-active">ACTIVE</span>
-          </div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">Toilet Paper is Officially Obsolete</p>
-      <p class="ad-body">DUDE Wipes are bigger, stronger, and flushable. Join 5 million dudes who made the switch. Grab a free trial pack today — just pay shipping. Your backside will thank you.</p>
-      <div class="card-footer">
-        <div>
-          <div class="running-days" style="color:#71717a">Running 18d</div>
-          <div class="running-since">Since Feb 14, 2025</div>
-        </div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <!-- CARD 5 -->
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Thesis Nootropics</div>
-          <div class="badges">
-            <span class="badge badge-fb">FB</span>
-            <span class="badge badge-active">ACTIVE</span>
-          </div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">Your Brain Is Different. Your Nootropics Should Be Too.</p>
-      <p class="ad-body">Thesis blends are personalized to your unique brain chemistry. Take our 3-minute quiz to find your formula. Over 250,000 high performers use Thesis every day to think clearer, focus longer, and get more done.</p>
-      <div class="card-footer">
-        <div>
-          <div class="running-days" style="color:#22c55e">🔥 Running 98d</div>
-          <div class="running-since">Since Nov 26, 2024</div>
-        </div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <!-- CARD 6 -->
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Keeps</div>
-          <div class="badges">
-            <span class="badge badge-ig">IG</span>
-            <span class="badge badge-active">ACTIVE</span>
-          </div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">Stop Hair Loss Before It Stops You</p>
-      <p class="ad-body">Clinically proven treatments delivered to your door every 3 months. No office visits. No pharmacy lines. Just real results — 90% of men who use Keeps keep their hair. Start your free consultation now.</p>
-      <div class="card-footer">
-        <div>
-          <div class="running-days" style="color:#22c55e">🔥 Running 201d</div>
-          <div class="running-since">Since Aug 15, 2024</div>
-        </div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
+  <aside id="sb-search"></aside>
+  <div class="main">
+    <div class="ph"><div class="pt">Search Ads</div><div class="ps">Browse winning Facebook &amp; Instagram ads. Longest-running = proven winners.</div></div>
+    <form class="sform" onsubmit="doSearch(event)">
+      <input class="sinput" id="q-search" type="text" placeholder='Filter by keyword: "weight loss", "skincare"…' />
+      <button class="sbtn" id="btn-search" type="submit">Search</button>
+    </form>
+    <div id="rc-search" class="rcount" style="display:none"></div>
+    <div id="err-search" class="errbox" style="display:none"></div>
+    <div id="grid-search" class="grid"></div>
+    <div id="lm-search" class="lmwrap" style="display:none"><button class="lmbtn" onclick="more('search')">Load More</button></div>
+    <div id="lmx-search" style="text-align:center;margin-top:1rem;color:#3f3f46;font-size:.8rem;display:none">Loading…</div>
   </div>
 </div>
 
-<!-- ========== SPY PAGE ========== -->
+<!-- SPY -->
 <div class="page" id="page-spy">
-  <h1>Competitor Spy</h1>
-  <p class="subtitle">Enter a brand or product name. Ads running 60+ days are their winners — steal the formula.</p>
-
-  <div class="notice">⏳ Meta identity review pending — spy will be live once approved.</div>
-
-  <div class="search-wrap">
-    <div class="search-row">
-      <input type="text" placeholder='"Athletic Greens" or "Manscaped"' />
-      <select><option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option></select>
-      <button class="btn-primary">Spy</button>
-    </div>
-  </div>
-
-  <!-- Stats bar (example) -->
-  <div class="stats-bar">
-    <div>
-      <div class="stat-val">34</div>
-      <div class="stat-label">Active ads found for "Athletic Greens"</div>
-    </div>
-    <div>
-      <div class="stat-val green">12</div>
-      <div class="stat-label">Running 60+ days (top performers)</div>
-    </div>
-  </div>
-
-  <div class="section-label green">🔥 Top Performers (60+ days running)</div>
-  <div class="ad-grid">
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Athletic Greens</div>
-          <div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-ig">IG</span><span class="badge badge-active">ACTIVE</span></div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">The All-In-One Daily Health Drink</p>
-      <p class="ad-body">AG1 contains 75 high-quality vitamins, minerals, whole-food sourced superfoods, probiotics, and adaptogens. Just one scoop covers your nutritional bases so you can focus on what matters most.</p>
-      <div class="card-footer">
-        <div><div class="running-days" style="color:#22c55e">🔥 Running 187d</div><div class="running-since">Since Aug 29, 2024</div></div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Athletic Greens</div>
-          <div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-active">ACTIVE</span></div>
-        </div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-title">Free Year Supply of Vitamin D3+K2</p>
-      <p class="ad-body">Right now when you subscribe to AG1, we'll throw in a free year supply of Vitamin D3+K2 drops — a $40 value. This offer won't last long. Join 1 million people who start every morning with AG1.</p>
-      <div class="card-footer">
-        <div><div class="running-days" style="color:#22c55e">🔥 Running 143d</div><div class="running-since">Since Oct 12, 2024</div></div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-label muted">All Active Ads — Sorted by Running Time</div>
-  <div class="ad-grid">
-    <div class="ad-card">
-      <div class="card-header">
-        <div><div class="advertiser">Athletic Greens</div><div class="badges"><span class="badge badge-ig">IG</span><span class="badge badge-active">ACTIVE</span></div></div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-body">Try AG1 for 90 days risk-free. If you're not completely satisfied, we'll give you a full refund. No questions asked.</p>
-      <div class="card-footer">
-        <div><div class="running-days" style="color:#f59e0b">Running 41d</div><div class="running-since">Since Jan 21, 2025</div></div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-    <div class="ad-card">
-      <div class="card-header">
-        <div><div class="advertiser">Athletic Greens</div><div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-active">ACTIVE</span></div></div>
-        <button class="save-btn" onclick="toggleSave(this)">☆</button>
-      </div>
-      <p class="ad-body">I used to take 9 different supplements every morning. Now I just take AG1. One scoop. Done. My doctor actually recommended it.</p>
-      <div class="card-footer">
-        <div><div class="running-days" style="color:#71717a">Running 12d</div><div class="running-since">Since Feb 20, 2025</div></div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
+  <aside id="sb-spy"></aside>
+  <div class="main">
+    <div class="ph"><div class="pt">Competitor Spy</div><div class="ps">Search a brand. Ads running 60+ days are their proven winners.</div></div>
+    <form class="sform" onsubmit="doSpy(event)">
+      <input class="sinput" id="q-spy" type="text" placeholder='"Athletic Greens" or "Manscaped"' />
+      <button class="sbtn" id="btn-spy" type="submit">Spy</button>
+    </form>
+    <div id="spy-stats" class="spy-stats" style="display:none"></div>
+    <div id="err-spy" class="errbox" style="display:none"></div>
+    <div id="lbl-top" class="sec-lbl" style="display:none;color:#22c55e">🔥 Top Performers — 60+ days running</div>
+    <div id="grid-top" class="grid" style="margin-bottom:2rem"></div>
+    <div id="lbl-all" class="sec-lbl" style="display:none;color:#52525b">All Ads — Sorted by Running Time</div>
+    <div id="grid-spy" class="grid"></div>
+    <div id="lm-spy" class="lmwrap" style="display:none"><button class="lmbtn" onclick="more('spy')">Load More</button></div>
   </div>
 </div>
 
-<!-- ========== SWIPE FILE PAGE ========== -->
+<!-- SWIPE -->
 <div class="page" id="page-swipe">
-  <div class="swipe-header">
-    <div>
-      <h1>Swipe File</h1>
-      <p class="subtitle" id="swipe-count">1 saved ad — yours forever, even if they go inactive.</p>
+  <div class="main" style="width:100%">
+    <div class="ph"><div class="pt">Swipe File</div><div class="ps">Your saved winning ads.</div></div>
+    <div class="swfilters">
+      <button class="swfbtn active" onclick="swF('all',this)">All</button>
+      <button class="swfbtn" onclick="swF('facebook',this)">Facebook</button>
+      <button class="swfbtn" onclick="swF('instagram',this)">Instagram</button>
+      <button class="expbtn" onclick="exportSW()">↓ Export JSON</button>
     </div>
-    <div class="filter-group">
-      <button class="filter-btn active">All</button>
-      <button class="filter-btn">Facebook</button>
-      <button class="filter-btn">Instagram</button>
-    </div>
-  </div>
-
-  <div class="ad-grid" id="swipe-grid">
-    <div class="ad-card">
-      <div class="card-header">
-        <div>
-          <div class="advertiser">Manscaped</div>
-          <div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-active">ACTIVE</span></div>
-        </div>
-        <button class="save-btn saved" onclick="toggleSave(this)">★</button>
-      </div>
-      <p class="ad-title">Below the Belt Grooming — Finally Done Right</p>
-      <p class="ad-body">Stop settling for cheap razors. The Lawn Mower 5.0 Ultra is engineered with SkinSafe™ technology so you get a perfect shave every time with zero nicks.</p>
-      <div class="card-footer">
-        <div><div class="running-days" style="color:#22c55e">🔥 Running 142d</div><div class="running-since">Since Oct 13, 2024</div></div>
-        <a href="#" class="view-btn">View Ad ↗</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="swipe-footer">
-    <span style="font-size:0.75rem;color:#52525b">Saved locally in your browser</span>
-    <button class="export-btn">Export JSON</button>
+    <div id="sw-empty" style="display:none" class="empty">No saved ads yet. Hit ☆ Save on any ad.</div>
+    <div id="grid-swipe" class="grid"></div>
   </div>
 </div>
 
 <script>
-  function showPage(name, btn) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
-    btn.classList.add('active');
-  }
+const API='https://graph.facebook.com/v21.0/ads_archive';
+const FIELDS='id,ad_creation_time,ad_delivery_start_time,ad_delivery_stop_time,ad_creative_bodies,ad_creative_link_titles,ad_creative_link_descriptions,ad_creative_link_captions,ad_snapshot_url,page_id,page_name,publisher_platforms,spend,impressions';
+const CTRS=[
+  {v:'US',f:'🇺🇸',l:'United States'},{v:'GB',f:'🇬🇧',l:'United Kingdom'},
+  {v:'CA',f:'🇨🇦',l:'Canada'},{v:'AU',f:'🇦🇺',l:'Australia'},
+  {v:'DE',f:'🇩🇪',l:'Germany'},{v:'FR',f:'🇫🇷',l:'France'},
+  {v:'NL',f:'🇳🇱',l:'Netherlands'},{v:'IT',f:'🇮🇹',l:'Italy'},
+  {v:'ES',f:'🇪🇸',l:'Spain'},{v:'SE',f:'🇸🇪',l:'Sweden'},
+];
+const DF=()=>({country:'US',status:'ACTIVE',platforms:[],runTime:0,sortBy:'running'});
+const S={search:{f:DF(),cur:'',ads:[],busy:false,q:''},spy:{f:DF(),cur:'',ads:[],busy:false,q:''},swf:'all'};
+const cache={};
 
-  function toggleSave(btn) {
-    const saved = btn.classList.contains('saved');
-    btn.classList.toggle('saved');
-    btn.textContent = saved ? '☆' : '★';
-  }
+// Token
+const tok=()=>localStorage.getItem('av_tok')||'';
+function saveToken(){const v=document.getElementById('tokenInput').value.trim();if(!v)return;localStorage.setItem('av_tok',v);document.getElementById('tokenModal').style.display='none';boot();}
+function openModal(){document.getElementById('tokenInput').value=tok();document.getElementById('tokenModal').style.display='flex';}
+document.getElementById('tokenModal').addEventListener('click',e=>{if(e.target===e.currentTarget&&tok())e.currentTarget.style.display='none';});
 
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.closest('.filter-group').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
+// Sidebar
+function buildSB(id,key,cs=''){
+  const f=S[key].f;
+  const vis=CTRS.filter(c=>c.l.toLowerCase().includes(cs.toLowerCase()));
+  document.getElementById('sb-'+id).innerHTML=`
+    <div class="sb-head"><span class="sb-title">Filters</span><button class="reset-btn" onclick="resetF('${key}')">Reset</button></div>
+    <div class="section"><button class="sec-toggle" onclick="togS(this)">Country <span>▲</span></button>
+    <div class="sec-body"><input class="sec-search" type="text" placeholder="Search..." value="${cs}" oninput="buildSB('${id}','${key}',this.value)"/>
+    ${vis.map(c=>`<label class="opt" style="color:${f.country===c.v?'#e4e4e7':'#71717a'}">
+      <span class="opt-box" style="background:${f.country===c.v?'#22c55e':'transparent'};border:${f.country===c.v?'none':'1px solid #3f3f46'}">${f.country===c.v?'<span style="color:#000;font-size:10px;font-weight:700">✓</span>':''}</span>
+      <input type="radio" style="display:none" ${f.country===c.v?'checked':''} onchange="setF('${key}','country','${c.v}')"/>
+      ${c.f} ${c.l}</label>`).join('')}</div></div>
+    <div class="section"><button class="sec-toggle" onclick="togS(this)">Status <span>▲</span></button>
+    <div class="sec-body">${[['ACTIVE','Active only'],['ALL','Active + Inactive'],['INACTIVE','Inactive only']].map(([v,l])=>`
+      <label class="opt" style="color:${f.status===v?'#e4e4e7':'#71717a'}">
+        <span class="opt-dot" style="background:${f.status===v?'#22c55e':'transparent'};border:${f.status===v?'none':'1px solid #3f3f46'}"></span>
+        <input type="radio" style="display:none" ${f.status===v?'checked':''} onchange="setF('${key}','status','${v}')"/>
+        ${l}</label>`).join('')}</div></div>
+    <div class="section"><button class="sec-toggle" onclick="togS(this)">Platform <span>▲</span></button>
+    <div class="sec-body">${['facebook','instagram'].map(p=>`
+      <label class="opt" style="color:${f.platforms.includes(p)?'#e4e4e7':'#71717a'}">
+        <span class="opt-box" style="background:${f.platforms.includes(p)?'#22c55e':'transparent'};border:${f.platforms.includes(p)?'none':'1px solid #3f3f46'}">${f.platforms.includes(p)?'<span style="color:#000;font-size:10px;font-weight:700">✓</span>':''}</span>
+        <input type="checkbox" style="display:none" ${f.platforms.includes(p)?'checked':''} onchange="togP('${key}','${p}')"/>
+        ${p[0].toUpperCase()+p.slice(1)}</label>`).join('')}</div></div>
+    <div class="section"><button class="sec-toggle" onclick="togS(this)">Run Time <span>▲</span></button>
+    <div class="sec-body">${[[0,'Any'],[7,'7+ days'],[30,'30+ days'],[60,'60+ days'],[90,'90+ days']].map(([v,l])=>`
+      <label class="opt" style="color:${f.runTime===v?'#e4e4e7':'#71717a'}">
+        <span class="opt-dot" style="background:${f.runTime===v?'#22c55e':'transparent'};border:${f.runTime===v?'none':'1px solid #3f3f46'}"></span>
+        <input type="radio" style="display:none" ${f.runTime===v?'checked':''} onchange="setF('${key}','runTime',${v})"/>
+        ${l}</label>`).join('')}</div></div>
+    <div class="section"><button class="sec-toggle" onclick="togS(this)">Sort By <span>▲</span></button>
+    <div class="sec-body">${[['running','Longest running first'],['recent','Most recent first']].map(([v,l])=>`
+      <label class="opt" style="color:${f.sortBy===v?'#e4e4e7':'#71717a'}">
+        <span class="opt-dot" style="background:${f.sortBy===v?'#22c55e':'transparent'};border:${f.sortBy===v?'none':'1px solid #3f3f46'}"></span>
+        <input type="radio" style="display:none" ${f.sortBy===v?'checked':''} onchange="setF('${key}','sortBy','${v}')"/>
+        ${l}</label>`).join('')}</div></div>`;
+}
+function togS(b){const c=b.nextElementSibling,o=c.style.display!=='none';c.style.display=o?'none':'';b.querySelector('span').textContent=o?'▼':'▲';}
+function setF(k,p,v){S[k].f[p]=v;buildSB(k,k);S[k].cur='';S[k].ads=[];if(k==='search')fetch2('search');else if(k==='spy'&&S.spy.q)fetch2('spy');}
+function togP(k,p){const a=S[k].f.platforms,i=a.indexOf(p);if(i>-1)a.splice(i,1);else a.push(p);setF(k,'platforms',a);}
+function resetF(k){S[k].f=DF();buildSB(k,k);S[k].cur='';S[k].ads=[];if(k==='search')fetch2('search');else if(k==='spy'&&S.spy.q)fetch2('spy');}
+
+// API
+async function callAPI(q,f,cur){
+  const t=tok();if(!t){openModal();throw new Error('NO_TOKEN');}
+  const p=new URLSearchParams({access_token:t,ad_reached_countries:`["${f.country}"]`,ad_active_status:f.status,ad_type:'ALL',fields:FIELDS,limit:'40'});
+  if(q&&q.trim())p.set('search_terms',q.trim());
+  if(cur)p.set('after',cur);
+  const r=await fetch(`${API}?${p}`);return r.json();
+}
+function applyF(ads,f){
+  let o=[...ads];
+  if(f.platforms.length)o=o.filter(a=>f.platforms.some(p=>(a.publisher_platforms||[]).includes(p)));
+  if(f.runTime>0)o=o.filter(a=>{if(!a.ad_delivery_start_time)return false;return Math.floor((Date.now()-new Date(a.ad_delivery_start_time).getTime())/86400000)>=f.runTime;});
+  o.sort((a,b)=>{
+    if(f.sortBy==='running'){const aT=a.ad_delivery_start_time?new Date(a.ad_delivery_start_time).getTime():0,bT=b.ad_delivery_start_time?new Date(b.ad_delivery_start_time).getTime():0;return aT-bT;}
+    const aT=a.ad_creation_time?new Date(a.ad_creation_time).getTime():0,bT=b.ad_creation_time?new Date(b.ad_creation_time).getTime():0;return bT-aT;
+  });return o;
+}
+
+// Fetch
+async function fetch2(key,app=false){
+  if(S[key].busy)return;S[key].busy=true;
+  const btn=document.getElementById('btn-'+key),err=document.getElementById('err-'+key);
+  btn.disabled=true;btn.textContent=key==='spy'?'Spying…':'Loading…';
+  err.style.display='none';
+  if(!app){
+    showSkel(key==='search'?'grid-search':'grid-spy');
+    if(key==='spy'){document.getElementById('grid-top').innerHTML='';document.getElementById('spy-stats').style.display='none';document.getElementById('lbl-top').style.display='none';document.getElementById('lbl-all').style.display='none';}
+    if(key==='search'){document.getElementById('rc-search').style.display='none';document.getElementById('lm-search').style.display='none';}
+  }else{document.getElementById('lm-'+key).style.display='none';if(key==='search')document.getElementById('lmx-search').style.display='block';}
+  try{
+    const data=await callAPI(S[key].q,S[key].f,app?S[key].cur:'');
+    if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));
+    const fl=applyF(data.data||[],S[key].f);
+    if(app)S[key].ads=[...S[key].ads,...fl];else S[key].ads=fl;
+    fl.forEach(a=>{cache[a.id]=a;});
+    S[key].cur=data.paging?.cursors?.after||'';
+    if(key==='search')rSearch();else rSpy();
+  }catch(e){
+    if(e.message!=='NO_TOKEN'){err.textContent=e.message;err.style.display='block';if(!app)document.getElementById(key==='search'?'grid-search':'grid-spy').innerHTML='';}
+  }finally{
+    S[key].busy=false;btn.disabled=false;btn.textContent=key==='spy'?'Spy':'Search';
+    if(key==='search')document.getElementById('lmx-search').style.display='none';
+  }
+}
+function more(k){fetch2(k,true);}
+function doSearch(e){e.preventDefault();S.search.q=document.getElementById('q-search').value;S.search.cur='';S.search.ads=[];fetch2('search');}
+function doSpy(e){e.preventDefault();S.spy.q=document.getElementById('q-spy').value.trim();if(!S.spy.q)return;S.spy.cur='';S.spy.ads=[];fetch2('spy');}
+
+// Render
+function rSearch(){
+  const g=document.getElementById('grid-search');
+  if(!S.search.ads.length){g.innerHTML='<div class="empty">No ads found. Try adjusting filters.</div>';return;}
+  g.innerHTML=S.search.ads.map(a=>mkCard(a)).join('');loadImgs();
+  const rc=document.getElementById('rc-search');
+  rc.textContent=`${S.search.ads.length} ads${S.search.q?` for "${S.search.q}"`:''}${S.search.f.runTime>0?` · ${S.search.f.runTime}+ days`:''}${S.search.f.platforms.length?` · ${S.search.f.platforms.join(', ')}`:''} `;
+  rc.style.display='block';
+  document.getElementById('lm-search').style.display=S.search.cur?'block':'none';
+}
+function rSpy(){
+  const all=S.spy.ads;
+  const top=all.filter(a=>a.ad_delivery_start_time&&Math.floor((Date.now()-new Date(a.ad_delivery_start_time).getTime())/86400000)>=60);
+  document.getElementById('spy-stats').innerHTML=`
+    <div class="sstat"><div style="font-size:1.5rem;font-weight:700;color:#fafafa;line-height:1">${all.length}</div><div style="font-size:.7rem;color:#52525b;margin-top:.2rem">Ads for "${S.spy.q}"</div></div>
+    <div class="sstat"><div style="font-size:1.5rem;font-weight:700;color:#22c55e;line-height:1">${top.length}</div><div style="font-size:.7rem;color:#52525b;margin-top:.2rem">Running 60+ days 🔥</div></div>`;
+  document.getElementById('spy-stats').style.display='flex';
+  document.getElementById('lbl-top').style.display=top.length?'block':'none';
+  document.getElementById('grid-top').innerHTML=top.map(a=>mkCard(a)).join('');
+  document.getElementById('lbl-all').style.display=all.length?'block':'none';
+  document.getElementById('grid-spy').innerHTML=all.map(a=>mkCard(a)).join('');
+  document.getElementById('lm-spy').style.display=S.spy.cur?'block':'none';
+  loadImgs();
+}
+
+// Card
+const days=s=>s?Math.floor((Date.now()-new Date(s).getTime())/86400000):null;
+const rating=d=>!d?1:d>=90?5:d>=60?4:d>=30?3:d>=14?2:1;
+const fmt=n=>{if(!n)return'—';const x=parseInt(n);return x>=1e6?(x/1e6).toFixed(1)+'M':x>=1e3?(x/1e3).toFixed(0)+'K':n;};
+const bcolor=n=>{const p=['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899'];let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return p[Math.abs(h)%p.length];};
+const fdate=d=>d?new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'?';
+const isSaved=id=>{try{return JSON.parse(localStorage.getItem('av_sw')||'[]').some(a=>a.id===id);}catch{return false;}};
+
+function mkCard(ad){
+  const d=days(ad.ad_delivery_start_time),r=rating(d);
+  const body=(ad.ad_creative_bodies||[])[0]||'',title=(ad.ad_creative_link_titles||[])[0]||'',cap=(ad.ad_creative_link_captions||[])[0]||'';
+  const plat=ad.publisher_platforms||[],active=!ad.ad_delivery_stop_time;
+  const col=bcolor(ad.page_name||''),ini=(ad.page_name||'?')[0].toUpperCase();
+  const impr=ad.impressions?.lower_bound,sv=isSaved(ad.id);
+  return`<div class="acard">
+  <div class="cm">
+    <div style="display:flex;gap:.75rem;align-items:center">
+      ${impr?`<span style="font-size:.7rem;color:#71717a">👁 ${fmt(impr)}</span>`:''}
+      <span style="font-size:.7rem;color:#71717a">${d!==null?d+'d':'New'}</span>
+    </div>
+    <div style="display:flex;gap:1px">${[1,2,3,4,5].map(s=>`<span style="font-size:.65rem;color:${s<=r?'#22c55e':'#27272a'}">★</span>`).join('')}</div>
+  </div>
+  <div class="cbrand">
+    <div class="avatar" style="background:${col}">${ini}</div>
+    <div style="flex:1;min-width:0">
+      <div class="bname">${(ad.page_name||'').substring(0,40)}</div>
+      <div class="bdate">
+        <span style="font-size:.55rem;color:${active?'#22c55e':'#71717a'}">●</span>
+        ${fdate(ad.ad_delivery_start_time)} – ${active?'Present':fdate(ad.ad_delivery_stop_time)}
+        ${d!==null?`<span style="color:#3f3f46"> ${d}d</span>`:''}
+      </div>
+    </div>
+    <div class="pbadges">
+      ${plat.includes('facebook')?'<span class="pfb">FB</span>':''}
+      ${plat.includes('instagram')?'<span class="pig">IG</span>':''}
+    </div>
+  </div>
+  <div class="creative" data-id="${ad.id}" data-snap="${ad.ad_snapshot_url||''}">
+    <div class="skel" style="width:100%;height:180px"></div>
+  </div>
+  ${title||body?`<div class="ccopy">
+    ${title?`<div class="cct">${title.substring(0,70)}${title.length>70?'…':''}</div>`:''}
+    ${body?`<div class="ccb">${body}</div>`:''}
+  </div>`:''}
+  <div class="cactions">
+    ${ad.ad_snapshot_url?`<a href="${ad.ad_snapshot_url}" target="_blank" class="viewbtn">View Ad ↗</a>`:'<div style="flex:1"></div>'}
+    <button class="savebtn" id="sv-${ad.id}" style="background:${sv?'#22c55e':'rgba(34,197,94,.125)'};color:${sv?'#000':'#22c55e'}" onclick="toggleSave('${ad.id}')">
+      ${sv?'★ Saved':'☆ Save'}
+    </button>
+  </div>
+</div>`;
+}
+
+// Images via allorigins.win CORS proxy
+function loadImgs(){
+  document.querySelectorAll('.creative[data-snap]').forEach(el=>{
+    const snap=el.getAttribute('data-snap'),id=el.getAttribute('data-id');
+    if(!snap){txtFB(el,id);return;}
+    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(snap)}`)
+      .then(r=>r.json()).then(d=>{
+        const html=d.contents||'';
+        let img=html.match(/property="og:image"\s+content="([^"]+)"/)?.[1]||html.match(/content="([^"]+)"\s+property="og:image"/)?.[1];
+        if(img&&img.includes('facebook.com/images/'))img=null;
+        if(!img)img=html.match(/poster="(https:\/\/[^"]+)"/)?.[1];
+        if(!img)img=html.match(/src="(https:\/\/[^"]*fbcdn\.net\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i)?.[1];
+        if(img){const i=new Image();i.style.cssText='width:100%;display:block;max-height:320px;object-fit:cover';i.loading='lazy';i.alt='Ad';i.onload=()=>{el.style.minHeight='';el.innerHTML='';el.appendChild(i);};i.onerror=()=>txtFB(el,id);i.src=img;}
+        else txtFB(el,id);
+      }).catch(()=>txtFB(el,id));
   });
+}
+function txtFB(el,id){
+  const ad=cache[id]||{};
+  const body=(ad.ad_creative_bodies||[])[0]||'',title=(ad.ad_creative_link_titles||[])[0]||'',cap=(ad.ad_creative_link_captions||[])[0]||'';
+  const col=bcolor(ad.page_name||'');
+  el.innerHTML=`<div class="ctext"><div class="caccent" style="background:linear-gradient(90deg,${col}80,transparent)"></div>${title?`<div class="ctitle">${title.substring(0,80)}${title.length>80?'…':''}</div>`:''}${body?`<div class="cbody">${body}</div>`:'<div style="font-size:.75rem;color:#3f3f46;font-style:italic">No preview available</div>'}${cap?`<div class="ccap">${cap}</div>`:''}</div>`;
+}
+function showSkel(gid){document.getElementById(gid).innerHTML=Array(12).fill(0).map(()=>`<div class="acard"><div class="skel" style="height:360px;width:100%"></div></div>`).join('');}
+
+// Swipe
+const getSW=()=>{try{return JSON.parse(localStorage.getItem('av_sw')||'[]');}catch{return[];}};
+const setSW=a=>localStorage.setItem('av_sw',JSON.stringify(a));
+function toggleSave(id){
+  const sw=getSW(),btn=document.getElementById('sv-'+id);
+  if(sw.find(a=>a.id===id)){setSW(sw.filter(a=>a.id!==id));if(btn){btn.style.background='rgba(34,197,94,.125)';btn.style.color='#22c55e';btn.textContent='☆ Save';}}
+  else{const ad=cache[id];if(ad)setSW([...sw,ad]);if(btn){btn.style.background='#22c55e';btn.style.color='#000';btn.textContent='★ Saved';}}
+  if(document.getElementById('page-swipe').classList.contains('active'))rSwipe();
+}
+function swF(f,el){S.swf=f;document.querySelectorAll('.swfbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');rSwipe();}
+function rSwipe(){
+  let ads=getSW();
+  if(S.swf==='facebook')ads=ads.filter(a=>(a.publisher_platforms||[]).includes('facebook'));
+  if(S.swf==='instagram')ads=ads.filter(a=>(a.publisher_platforms||[]).includes('instagram'));
+  ads.forEach(a=>{cache[a.id]=a;});
+  document.getElementById('sw-empty').style.display=ads.length?'none':'block';
+  document.getElementById('grid-swipe').innerHTML=ads.length?ads.map(a=>mkCard(a)).join(''):'';
+  if(ads.length)loadImgs();
+}
+function exportSW(){const b=new Blob([JSON.stringify(getSW(),null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='swipe-file.json';a.click();URL.revokeObjectURL(u);}
+
+// Nav
+function goPage(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');btn.classList.add('active');
+  if(p==='swipe')rSwipe();
+}
+
+// Boot
+function boot(){buildSB('search','search');buildSB('spy','spy');fetch2('search');}
+window.addEventListener('DOMContentLoaded',()=>{buildSB('search','search');buildSB('spy','spy');if(!tok())openModal();else boot();});
 </script>
 </body>
 </html>
