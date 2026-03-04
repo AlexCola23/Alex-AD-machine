@@ -41,7 +41,18 @@ interface Props { ad: Ad; onRemove?: () => void; }
 
 export default function AdCard({ ad, onRemove }: Props) {
   const [saved, setSaved] = useState(false);
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [imgLoading, setImgLoading] = useState(true);
+
   useEffect(() => { setSaved(isSaved(ad.id)); }, [ad.id]);
+
+  useEffect(() => {
+    if (!ad.id) { setImgLoading(false); return; }
+    fetch(`/api/snapshot?id=${ad.id}`)
+      .then(r => r.json())
+      .then(d => { setImgUrl(d.imageUrl ?? null); setImgLoading(false); })
+      .catch(() => setImgLoading(false));
+  }, [ad.id]);
 
   const toggle = () => {
     if (saved) { removeAd(ad.id); setSaved(false); onRemove?.(); }
@@ -109,38 +120,60 @@ export default function AdCard({ ad, onRemove }: Props) {
         </div>
       </div>
 
-      {/* Creative area */}
-      <div style={{
-        margin: "0 0.875rem", borderRadius: "8px", background: "#0d0d10",
-        border: "1px solid #1e1e23", padding: "1rem", minHeight: "140px",
-        display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "0.5rem",
-        position: "relative", overflow: "hidden",
-      }}>
-        {/* Subtle gradient accent */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, ${color}80, transparent)` }} />
-
-        {title && (
-          <p style={{ margin: 0, fontSize: "0.8rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.4 }}>
-            {title.length > 80 ? title.slice(0, 80) + "…" : title}
-          </p>
-        )}
-
-        {body && (
-          <p style={{ margin: 0, fontSize: "0.75rem", color: "#71717a", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-            {body}
-          </p>
-        )}
-
-        {!title && !body && (
-          <p style={{ margin: 0, fontSize: "0.75rem", color: "#3f3f46", fontStyle: "italic" }}>No copy preview</p>
-        )}
-
-        {caption && (
-          <div style={{ fontSize: "0.65rem", color: "#22c55e", background: "#22c55e10", padding: "0.2rem 0.5rem", borderRadius: "4px", alignSelf: "flex-start", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {caption}
+      {/* Creative area — real image or text fallback */}
+      <div style={{ margin: "0 0.875rem", borderRadius: "8px", overflow: "hidden", background: "#0d0d10", border: "1px solid #1e1e23", minHeight: "180px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {imgLoading ? (
+          /* Skeleton pulse */
+          <div style={{ width: "100%", height: "180px", background: "linear-gradient(90deg, #0d0d10 25%, #1a1a1f 50%, #0d0d10 75%)", backgroundSize: "200% 100%", animation: "skeleton 1.4s ease infinite" }} />
+        ) : imgUrl ? (
+          <img
+            src={imgUrl}
+            alt="Ad creative"
+            loading="lazy"
+            style={{ width: "100%", display: "block", maxHeight: "320px", objectFit: "cover" }}
+            onError={() => setImgUrl(null)}
+          />
+        ) : (
+          /* Text fallback if no image found */
+          <div style={{ padding: "1rem", width: "100%", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, ${color}80, transparent)` }} />
+            {title && (
+              <p style={{ margin: "0 0 0.5rem", fontSize: "0.8rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.4 }}>
+                {title.length > 80 ? title.slice(0, 80) + "…" : title}
+              </p>
+            )}
+            {body && (
+              <p style={{ margin: 0, fontSize: "0.75rem", color: "#71717a", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                {body}
+              </p>
+            )}
+            {!title && !body && (
+              <p style={{ margin: 0, fontSize: "0.75rem", color: "#3f3f46", fontStyle: "italic" }}>No preview available</p>
+            )}
+            {caption && (
+              <div style={{ marginTop: "0.5rem", fontSize: "0.65rem", color: "#22c55e", background: "#22c55e10", padding: "0.2rem 0.5rem", borderRadius: "4px", display: "inline-block", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {caption}
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Ad copy below image */}
+      {!imgLoading && imgUrl && (title || body) && (
+        <div style={{ padding: "0.625rem 0.875rem 0", borderTop: "none" }}>
+          {title && (
+            <p style={{ margin: "0 0 0.25rem", fontSize: "0.78rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.3 }}>
+              {title.length > 70 ? title.slice(0, 70) + "…" : title}
+            </p>
+          )}
+          {body && (
+            <p style={{ margin: 0, fontSize: "0.72rem", color: "#71717a", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              {body}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Action bar */}
       <div style={{ display: "flex", gap: "0.5rem", padding: "0.75rem 0.875rem", marginTop: "auto" }}>
@@ -150,7 +183,7 @@ export default function AdCard({ ad, onRemove }: Props) {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#3f3f46"; (e.currentTarget as HTMLElement).style.color = "#fafafa"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#27272a"; (e.currentTarget as HTMLElement).style.color = "#a1a1aa"; }}
           >
-            Details ↗
+            View Ad ↗
           </a>
         ) : <div style={{ flex: 1 }} />}
 
