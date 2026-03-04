@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AdVault — Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090b; color: #fafafa; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+
+  /* NAV */
+  nav { background: #111115; border-bottom: 1px solid #27272a; position: sticky; top: 0; z-index: 50; }
+  .nav-inner { max-width: 80rem; margin: 0 auto; padding: 0 1rem; display: flex; align-items: center; gap: 2rem; height: 56px; }
+  .logo { font-size: 1.125rem; font-weight: 700; color: #3b82f6; letter-spacing: -0.02em; cursor: pointer; }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-link { padding: 0.375rem 0.875rem; border-radius: 6px; font-size: 0.875rem; color: #a1a1aa; cursor: pointer; transition: all 0.15s; background: transparent; border: none; }
+  .nav-link:hover { color: #fafafa; background: #1e1e22; }
+  .nav-link.active { color: #fafafa; background: #27272a; font-weight: 600; }
+
+  /* PAGES */
+  .page { display: none; max-width: 80rem; margin: 0 auto; padding: 2rem 1rem; }
+  .page.active { display: block; }
+
+  /* HEADINGS */
+  h1 { font-size: 1.5rem; font-weight: 700; color: #fafafa; }
+  .subtitle { color: #71717a; margin-top: 0.25rem; font-size: 0.875rem; }
+
+  /* SEARCH BAR */
+  .search-wrap { margin: 1.5rem 0; display: flex; flex-direction: column; gap: 0.75rem; }
+  .search-row { display: flex; gap: 0.5rem; }
+  .filters-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type=text] { background: #18181b; border: 1px solid #27272a; border-radius: 8px; color: #fafafa; font-size: 1rem; padding: 0.625rem 1rem; outline: none; flex: 1; transition: border-color 0.15s; }
+  input[type=text]:focus { border-color: #3b82f6; }
+  input[type=text]::placeholder { color: #52525b; }
+  select { background: #18181b; border: 1px solid #27272a; border-radius: 8px; color: #fafafa; font-size: 0.875rem; padding: 0.5rem 0.75rem; outline: none; cursor: pointer; }
+  .btn-primary { background: #3b82f6; border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 0.875rem; font-weight: 600; padding: 0.625rem 1.5rem; transition: background 0.15s; }
+  .btn-primary:hover { background: #2563eb; }
+
+  /* AD GRID */
+  .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
+
+  /* AD CARD */
+  .ad-card { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; transition: border-color 0.15s; }
+  .ad-card:hover { border-color: #3f3f46; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+  .advertiser { font-weight: 600; font-size: 0.875rem; color: #fafafa; }
+  .badges { display: flex; gap: 0.25rem; margin-top: 0.25rem; flex-wrap: wrap; }
+  .badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+  .badge-fb { background: #1d4ed8; color: #bfdbfe; }
+  .badge-ig { background: #7c3aed; color: #ddd6fe; }
+  .badge-active { background: #14532d; color: #86efac; }
+  .save-btn { background: #27272a; border: none; border-radius: 6px; color: #a1a1aa; cursor: pointer; font-size: 1rem; padding: 0.375rem 0.5rem; line-height: 1; transition: all 0.15s; flex-shrink: 0; }
+  .save-btn:hover { background: #14532d; color: #22c55e; }
+  .save-btn.saved { background: #14532d; color: #22c55e; }
+  .ad-title { font-size: 0.8rem; font-weight: 600; color: #d4d4d8; }
+  .ad-body { font-size: 0.8rem; color: #a1a1aa; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-footer { border-top: 1px solid #27272a; padding-top: 0.625rem; display: flex; justify-content: space-between; align-items: center; }
+  .running-days { font-size: 0.8rem; font-weight: 600; }
+  .running-since { font-size: 0.7rem; color: #52525b; margin-top: 1px; }
+  .view-btn { font-size: 0.75rem; color: #3b82f6; text-decoration: none; padding: 0.25rem 0.625rem; border: 1px solid #1d4ed8; border-radius: 5px; transition: background 0.15s; }
+  .view-btn:hover { background: #1e3a5f; }
+
+  /* STATS BAR */
+  .stats-bar { background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 0.875rem 1rem; margin-bottom: 1.25rem; display: flex; gap: 2rem; flex-wrap: wrap; }
+  .stat-val { font-size: 1.25rem; font-weight: 700; color: #fafafa; }
+  .stat-val.green { color: #22c55e; }
+  .stat-label { font-size: 0.75rem; color: #71717a; }
+
+  /* SECTION LABEL */
+  .section-label { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.75rem; }
+  .section-label.green { color: #22c55e; }
+  .section-label.muted { color: #71717a; }
+
+  /* SWIPE FILE */
+  .swipe-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+  .filter-group { display: flex; gap: 0.375rem; }
+  .filter-btn { background: transparent; border: 1px solid #27272a; border-radius: 6px; color: #71717a; cursor: pointer; font-size: 0.8rem; padding: 0.375rem 0.75rem; transition: all 0.15s; }
+  .filter-btn.active { background: #27272a; border-color: #3f3f46; color: #fafafa; font-weight: 600; }
+  .swipe-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #27272a; display: flex; justify-content: space-between; align-items: center; }
+  .export-btn { background: transparent; border: 1px solid #27272a; border-radius: 6px; color: #71717a; cursor: pointer; font-size: 0.75rem; padding: 0.375rem 0.75rem; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; color: #52525b; padding: 5rem 0; font-size: 0.875rem; }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+  /* PENDING NOTICE */
+  .notice { background: #1c1917; border: 1px solid #78350f; border-radius: 8px; color: #fcd34d; font-size: 0.875rem; padding: 0.875rem 1rem; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <span class="logo">AdVault</span>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="showPage('search', this)">Search Ads</button>
+      <button class="nav-link" onclick="showPage('spy', this)">Competitor Spy</button>
+      <button class="nav-link" onclick="showPage('swipe', this)">Swipe File</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ========== SEARCH PAGE ========== -->
+<div class="page active" id="page-search">
+  <h1>Search Ads</h1>
+  <p class="subtitle">Search Facebook & Instagram ads by keyword or niche. Longer-running ads = winning ads.</p>
+
+  <div class="notice">⏳ Meta identity review pending — search will be live once approved. Here's a preview of the UI.</div>
+
+  <div class="search-wrap">
+    <div class="search-row">
+      <input type="text" placeholder='"weight loss supplement" or "dropshipping"' />
+      <button class="btn-primary">Search</button>
+    </div>
+    <div class="filters-row">
+      <select><option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option><option>🇨🇦 Canada</option><option>🇦🇺 Australia</option></select>
+      <select><option>Active Ads Only</option><option>Active + Inactive</option><option>Inactive Only</option></select>
+      <select><option>Sort: Longest Running First</option><option>Sort: Most Recent First</option></select>
+    </div>
+  </div>
+
+  <div class="ad-grid">
+    <!-- CARD 1 -->
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Athletic Greens</div>
+          <div class="badges">
+            <span class="badge badge-fb">FB</span>
+            <span class="badge badge-ig">IG</span>
+            <span class="badge badge-active">ACTIVE</span>
+          </div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">The All-In-One Daily Health Drink</p>
+      <p class="ad-body">AG1 contains 75 high-quality vitamins, minerals, whole-food sourced superfoods, probiotics, and adaptogens to help you start your day right. Just one scoop a day covers your nutritional bases so you can focus on what matters most.</p>
+      <div class="card-footer">
+        <div>
+          <div class="running-days" style="color:#22c55e">🔥 Running 187d</div>
+          <div class="running-since">Since Aug 29, 2024</div>
+        </div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <!-- CARD 2 -->
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Manscaped</div>
+          <div class="badges">
+            <span class="badge badge-fb">FB</span>
+            <span class="badge badge-active">ACTIVE</span>
+          </div>
+        </div>
+        <button class="save-btn saved" onclick="toggleSave(this)">★</button>
+      </div>
+      <p class="ad-title">Below the Belt Grooming — Finally Done Right</p>
+      <p class="ad-body">Stop settling for cheap razors. The Lawn Mower 5.0 Ultra is engineered with SkinSafe™ technology so you get a perfect shave every time with zero nicks. Free shipping + free gift with every order over $50.</p>
+      <div class="card-footer">
+        <div>
+          <div class="running-days" style="color:#22c55e">🔥 Running 142d</div>
+          <div class="running-since">Since Oct 13, 2024</div>
+        </div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <!-- CARD 3 -->
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Hims</div>
+          <div class="badges">
+            <span class="badge badge-ig">IG</span>
+            <span class="badge badge-active">ACTIVE</span>
+          </div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">Hair Loss Doesn't Have to Be Forever</p>
+      <p class="ad-body">9 out of 10 men who use Hims keep their hair. Get FDA-approved finasteride delivered to your door, no awkward doctor visit needed. Start for $0 — first month free when you subscribe today.</p>
+      <div class="card-footer">
+        <div>
+          <div class="running-days" style="color:#f59e0b">Running 54d</div>
+          <div class="running-since">Since Jan 8, 2025</div>
+        </div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <!-- CARD 4 -->
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">DUDE Wipes</div>
+          <div class="badges">
+            <span class="badge badge-fb">FB</span>
+            <span class="badge badge-ig">IG</span>
+            <span class="badge badge-active">ACTIVE</span>
+          </div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">Toilet Paper is Officially Obsolete</p>
+      <p class="ad-body">DUDE Wipes are bigger, stronger, and flushable. Join 5 million dudes who made the switch. Grab a free trial pack today — just pay shipping. Your backside will thank you.</p>
+      <div class="card-footer">
+        <div>
+          <div class="running-days" style="color:#71717a">Running 18d</div>
+          <div class="running-since">Since Feb 14, 2025</div>
+        </div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <!-- CARD 5 -->
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Thesis Nootropics</div>
+          <div class="badges">
+            <span class="badge badge-fb">FB</span>
+            <span class="badge badge-active">ACTIVE</span>
+          </div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">Your Brain Is Different. Your Nootropics Should Be Too.</p>
+      <p class="ad-body">Thesis blends are personalized to your unique brain chemistry. Take our 3-minute quiz to find your formula. Over 250,000 high performers use Thesis every day to think clearer, focus longer, and get more done.</p>
+      <div class="card-footer">
+        <div>
+          <div class="running-days" style="color:#22c55e">🔥 Running 98d</div>
+          <div class="running-since">Since Nov 26, 2024</div>
+        </div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <!-- CARD 6 -->
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Keeps</div>
+          <div class="badges">
+            <span class="badge badge-ig">IG</span>
+            <span class="badge badge-active">ACTIVE</span>
+          </div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">Stop Hair Loss Before It Stops You</p>
+      <p class="ad-body">Clinically proven treatments delivered to your door every 3 months. No office visits. No pharmacy lines. Just real results — 90% of men who use Keeps keep their hair. Start your free consultation now.</p>
+      <div class="card-footer">
+        <div>
+          <div class="running-days" style="color:#22c55e">🔥 Running 201d</div>
+          <div class="running-since">Since Aug 15, 2024</div>
+        </div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SPY PAGE ========== -->
+<div class="page" id="page-spy">
+  <h1>Competitor Spy</h1>
+  <p class="subtitle">Enter a brand or product name. Ads running 60+ days are their winners — steal the formula.</p>
+
+  <div class="notice">⏳ Meta identity review pending — spy will be live once approved.</div>
+
+  <div class="search-wrap">
+    <div class="search-row">
+      <input type="text" placeholder='"Athletic Greens" or "Manscaped"' />
+      <select><option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option></select>
+      <button class="btn-primary">Spy</button>
+    </div>
+  </div>
+
+  <!-- Stats bar (example) -->
+  <div class="stats-bar">
+    <div>
+      <div class="stat-val">34</div>
+      <div class="stat-label">Active ads found for "Athletic Greens"</div>
+    </div>
+    <div>
+      <div class="stat-val green">12</div>
+      <div class="stat-label">Running 60+ days (top performers)</div>
+    </div>
+  </div>
+
+  <div class="section-label green">🔥 Top Performers (60+ days running)</div>
+  <div class="ad-grid">
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Athletic Greens</div>
+          <div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-ig">IG</span><span class="badge badge-active">ACTIVE</span></div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">The All-In-One Daily Health Drink</p>
+      <p class="ad-body">AG1 contains 75 high-quality vitamins, minerals, whole-food sourced superfoods, probiotics, and adaptogens. Just one scoop covers your nutritional bases so you can focus on what matters most.</p>
+      <div class="card-footer">
+        <div><div class="running-days" style="color:#22c55e">🔥 Running 187d</div><div class="running-since">Since Aug 29, 2024</div></div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Athletic Greens</div>
+          <div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-active">ACTIVE</span></div>
+        </div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-title">Free Year Supply of Vitamin D3+K2</p>
+      <p class="ad-body">Right now when you subscribe to AG1, we'll throw in a free year supply of Vitamin D3+K2 drops — a $40 value. This offer won't last long. Join 1 million people who start every morning with AG1.</p>
+      <div class="card-footer">
+        <div><div class="running-days" style="color:#22c55e">🔥 Running 143d</div><div class="running-since">Since Oct 12, 2024</div></div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label muted">All Active Ads — Sorted by Running Time</div>
+  <div class="ad-grid">
+    <div class="ad-card">
+      <div class="card-header">
+        <div><div class="advertiser">Athletic Greens</div><div class="badges"><span class="badge badge-ig">IG</span><span class="badge badge-active">ACTIVE</span></div></div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-body">Try AG1 for 90 days risk-free. If you're not completely satisfied, we'll give you a full refund. No questions asked.</p>
+      <div class="card-footer">
+        <div><div class="running-days" style="color:#f59e0b">Running 41d</div><div class="running-since">Since Jan 21, 2025</div></div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+    <div class="ad-card">
+      <div class="card-header">
+        <div><div class="advertiser">Athletic Greens</div><div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-active">ACTIVE</span></div></div>
+        <button class="save-btn" onclick="toggleSave(this)">☆</button>
+      </div>
+      <p class="ad-body">I used to take 9 different supplements every morning. Now I just take AG1. One scoop. Done. My doctor actually recommended it.</p>
+      <div class="card-footer">
+        <div><div class="running-days" style="color:#71717a">Running 12d</div><div class="running-since">Since Feb 20, 2025</div></div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SWIPE FILE PAGE ========== -->
+<div class="page" id="page-swipe">
+  <div class="swipe-header">
+    <div>
+      <h1>Swipe File</h1>
+      <p class="subtitle" id="swipe-count">1 saved ad — yours forever, even if they go inactive.</p>
+    </div>
+    <div class="filter-group">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Facebook</button>
+      <button class="filter-btn">Instagram</button>
+    </div>
+  </div>
+
+  <div class="ad-grid" id="swipe-grid">
+    <div class="ad-card">
+      <div class="card-header">
+        <div>
+          <div class="advertiser">Manscaped</div>
+          <div class="badges"><span class="badge badge-fb">FB</span><span class="badge badge-active">ACTIVE</span></div>
+        </div>
+        <button class="save-btn saved" onclick="toggleSave(this)">★</button>
+      </div>
+      <p class="ad-title">Below the Belt Grooming — Finally Done Right</p>
+      <p class="ad-body">Stop settling for cheap razors. The Lawn Mower 5.0 Ultra is engineered with SkinSafe™ technology so you get a perfect shave every time with zero nicks.</p>
+      <div class="card-footer">
+        <div><div class="running-days" style="color:#22c55e">🔥 Running 142d</div><div class="running-since">Since Oct 13, 2024</div></div>
+        <a href="#" class="view-btn">View Ad ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="swipe-footer">
+    <span style="font-size:0.75rem;color:#52525b">Saved locally in your browser</span>
+    <button class="export-btn">Export JSON</button>
+  </div>
+</div>
+
+<script>
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleSave(btn) {
+    const saved = btn.classList.contains('saved');
+    btn.classList.toggle('saved');
+    btn.textContent = saved ? '☆' : '★';
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.filter-group').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
