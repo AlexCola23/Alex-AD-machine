@@ -729,7 +729,10 @@
   <!-- Limit ads per brand -->
   <div class="filter-section">
     <div class="filter-section-header" onclick="toggleSection(this)">
-      <span class="filter-section-title">Limit ads per brand</span>
+      <span class="filter-section-title" style="display:flex;align-items:center;gap:5px">
+        Limit ads per brand
+        <span style="background:#f97316;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;line-height:1.4">New</span>
+      </span>
       <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="filter-section-body">
@@ -814,7 +817,7 @@
   <!-- Start Date -->
   <div class="filter-section">
     <div class="filter-section-header" onclick="toggleSection(this)">
-      <span class="filter-section-title">Start Date</span>
+      <span class="filter-section-title">Start date</span>
       <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="filter-section-body">
@@ -823,6 +826,132 @@
         <span style="color:var(--color-text-muted);font-size:12px">–</span>
         <input class="filter-range-input" type="date" style="flex:1;padding:5px 6px;font-size:10.5px">
       </div>
+    </div>
+  </div>
+
+  <!-- CTA Type -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">CTA Type</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <label class="flag-option"><input type="checkbox"> Shop Now</label>
+      <label class="flag-option"><input type="checkbox"> Learn More</label>
+      <label class="flag-option"><input type="checkbox"> Sign Up</label>
+      <label class="flag-option"><input type="checkbox"> Get Offer</label>
+      <label class="flag-option"><input type="checkbox"> Download</label>
+      <label class="flag-option"><input type="checkbox"> Book Now</label>
+      <label class="flag-option"><input type="checkbox"> Subscribe</label>
+      <label class="flag-option"><input type="checkbox"> Watch More</label>
+    </div>
+  </div>
+
+  <!-- Static ad style -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Static ad style</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <label class="flag-option"><input type="checkbox"> Product photo</label>
+      <label class="flag-option"><input type="checkbox"> Lifestyle</label>
+      <label class="flag-option"><input type="checkbox"> Infographic</label>
+      <label class="flag-option"><input type="checkbox"> Text-based</label>
+      <label class="flag-option"><input type="checkbox"> Before / After</label>
+      <label class="flag-option"><input type="checkbox"> Collage</label>
+    </div>
+  </div>
+
+  <!-- Niche -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Niche</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <input class="country-input" type="text" placeholder="Search niches...">
+      <label class="flag-option"><input type="checkbox"> Fashion & Apparel</label>
+      <label class="flag-option"><input type="checkbox"> Beauty & Skincare</label>
+      <label class="flag-option"><input type="checkbox"> Health & Wellness</label>
+      <label class="flag-option"><input type="checkbox"> Food & Beverage</label>
+      <label class="flag-option"><input type="checkbox"> Home & Garden</label>
+      <label class="flag-option"><input type="checkbox"> Electronics</label>
+      <label class="flag-option"><input type="checkbox"> Pets</label>
+      <label class="flag-option"><input type="checkbox"> Sports & Fitness</label>
+    </div>
+  </div>
+
+  <!-- Channels -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Channels</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <label class="flag-option"><input type="checkbox"> Facebook Feed</label>
+      <label class="flag-option"><input type="checkbox"> Instagram Feed</label>
+      <label class="flag-option"><input type="checkbox"> Facebook Stories</label>
+      <label class="flag-option"><input type="checkbox"> Instagram Stories</label>
+      <label class="flag-option"><input type="checkbox"> Facebook Reels</label>
+      <label class="flag-option"><input type="checkbox"> Instagram Reels</label>
+      <label class="flag-option"><input type="checkbox"> Audience Network</label>
+      <label class="flag-option"><input type="checkbox"> Messenger</label>
+    </div>
+  </div>
+
+  <!-- Creative usage -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Creative usage</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <label class="flag-option"><input type="checkbox"> Single ad</label>
+      <label class="flag-option"><input type="checkbox"> A/B tested</label>
+      <label class="flag-option"><input type="checkbox"> Multi-creative</label>
+    </div>
+  </div>
+
+  <!-- Brand active ads -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Brand active ads</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <div class="filter-range-row">
+        <input class="filter-range-input" type="number" placeholder="Min" min="0">
+        <span style="color:var(--color-text-muted);font-size:12px">–</span>
+        <input class="filter-range-input" type="number" placeholder="Max" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Video length -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Video length</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <label class="flag-option"><input type="checkbox"> Under 15s</label>
+      <label class="flag-option"><input type="checkbox"> 15s – 30s</label>
+      <label class="flag-option"><input type="checkbox"> 30s – 60s</label>
+      <label class="flag-option"><input type="checkbox"> 1min – 3min</label>
+      <label class="flag-option"><input type="checkbox"> 3min+</label>
+    </div>
+  </div>
+
+  <!-- Hide brands -->
+  <div class="filter-section">
+    <div class="filter-section-header" onclick="toggleSection(this)">
+      <span class="filter-section-title">Hide brands</span>
+      <svg class="filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="filter-section-body">
+      <input class="country-input" type="text" placeholder="Search brands to hide...">
+      <p style="font-size:11px;color:var(--color-text-muted);margin-top:2px">Exclude specific brands from results</p>
     </div>
   </div>
 </aside>
