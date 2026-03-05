@@ -1206,20 +1206,36 @@
   async function loadThumbnail(ad) {
     const el = document.getElementById(`thumb-${ad.id}`);
     if (!el) return;
+
+    // Fallback chain: domain OG → FB page picture → picsum
+    const setFallback = () => {
+      if (ad.page_id) {
+        // Use the Facebook page's profile picture (public, no token needed)
+        const fbPic = `https://graph.facebook.com/${ad.page_id}/picture?type=large`;
+        el.onerror = () => { el.src = `https://picsum.photos/seed/${ad.id}/400/260`; el.onerror = null; };
+        el.src = fbPic;
+      } else {
+        el.src = `https://picsum.photos/seed/${ad.id}/400/260`;
+      }
+      el.style.opacity = '1';
+    };
+
     try {
       const snapUrl = ad.ad_snapshot_url ? encodeURIComponent(ad.ad_snapshot_url) : '';
-      const res = await fetch(`/api/snapshot?id=${ad.id}${snapUrl ? '&snapUrl=' + snapUrl : ''}`);
+      const domain = ad.ad_creative_link_captions?.[0] || '';
+      const params = new URLSearchParams({ id: ad.id });
+      if (snapUrl) params.set('snapUrl', snapUrl);
+      if (domain) params.set('domain', domain);
+      const res = await fetch(`/api/snapshot?${params}`);
       const data = await res.json();
       if (data.imageUrl) {
         el.src = data.imageUrl;
         el.style.opacity = '1';
       } else {
-        el.src = `https://picsum.photos/seed/${ad.id}/400/260`;
-        el.style.opacity = '1';
+        setFallback();
       }
     } catch {
-      el.src = `https://picsum.photos/seed/${ad.id}/400/260`;
-      el.style.opacity = '1';
+      setFallback();
     }
   }
 
