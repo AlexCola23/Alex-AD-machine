@@ -162,7 +162,7 @@ export default function SearchPage() {
 
         {/* Loading skeletons */}
         {loading && ads.length === 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0.875rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1rem" }}>
             {[...Array(12)].map((_, i) => (
               <div key={i} style={{ background: "#111115", border: "1px solid #1e1e23", borderRadius: "12px", height: "360px", overflow: "hidden" }}>
                 <div style={{ height: "100%", background: "linear-gradient(90deg, #111115 25%, #1a1a1f 50%, #111115 75%)", backgroundSize: "200% 100%", animation: "skeleton 1.4s ease infinite" }} />
@@ -180,7 +180,7 @@ export default function SearchPage() {
 
         {/* Grid */}
         {ads.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0.875rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1rem" }}>
             {ads.map(ad => <AdCard key={ad.id} ad={ad} />)}
           </div>
         )}

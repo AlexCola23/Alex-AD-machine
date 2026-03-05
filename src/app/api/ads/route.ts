@@ -46,7 +46,13 @@ export async function GET(req: NextRequest) {
     limit,
   });
 
-  if (query) params.set("search_terms", query);
+  if (query) {
+    params.set("search_terms", query);
+  } else if (!pageIds) {
+    // Meta API requires search_terms when ad_type=ALL and no page_ids are given.
+    // Use a broad default so the browse/auto-load view works without a keyword.
+    params.set("search_terms", "a");
+  }
   if (pageIds) params.set("search_page_ids", pageIds);
   if (after) params.set("after", after);
 

@@ -33,8 +33,8 @@ function brandColor(name: string): string {
 }
 
 function formatDate(d?: string): string {
-  if (!d) return "Unknown";
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  if (!d) return "?";
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" });
 }
 
 interface Props { ad: Ad; onRemove?: () => void; }
@@ -63,135 +63,204 @@ export default function AdCard({ ad, onRemove }: Props) {
   const rating = stars(days);
   const body = ad.ad_creative_bodies?.[0] ?? "";
   const title = ad.ad_creative_link_titles?.[0] ?? "";
-  const caption = ad.ad_creative_link_captions?.[0] ?? "";
   const platforms = ad.publisher_platforms ?? [];
   const isActive = !ad.ad_delivery_stop_time;
-  const color = brandColor(ad.page_name);
+  const color = brandColor(ad.page_name ?? "");
   const initial = (ad.page_name || "?")[0].toUpperCase();
   const impressions = ad.impressions?.lower_bound;
 
   return (
-    <div style={{
-      background: "#111115", border: "1px solid #1e1e23", borderRadius: "12px",
-      display: "flex", flexDirection: "column", overflow: "hidden",
-      transition: "border-color 0.15s, transform 0.15s",
-    }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#22c55e40"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#1e1e23"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
+    <div
+      style={{
+        background: "#111115",
+        border: "1px solid #1e1e23",
+        borderRadius: "12px",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        transition: "border-color 0.15s, transform 0.15s, box-shadow 0.15s",
+        cursor: "pointer",
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.borderColor = "#22c55e50";
+        el.style.transform = "translateY(-2px)";
+        el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.borderColor = "#1e1e23";
+        el.style.transform = "none";
+        el.style.boxShadow = "none";
+      }}
     >
-      {/* Metrics row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.625rem 0.875rem 0", gap: "0.5rem" }}>
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          {impressions && (
-            <span style={{ fontSize: "0.7rem", color: "#71717a", display: "flex", alignItems: "center", gap: "0.2rem" }}>
-              <span>👁</span> {fmt(impressions)}
-            </span>
-          )}
-          <span style={{ fontSize: "0.7rem", color: "#71717a" }}>
-            {days !== null ? `${days}d` : "New"}
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: "1px" }}>
-          {[1,2,3,4,5].map(s => (
-            <span key={s} style={{ fontSize: "0.65rem", color: s <= rating ? "#22c55e" : "#27272a" }}>★</span>
-          ))}
-        </div>
-      </div>
+      {/* ── THUMBNAIL ── */}
+      <div style={{ position: "relative", width: "100%", aspectRatio: "4/3", background: "#0a0a0d", overflow: "hidden", flexShrink: 0 }}>
 
-      {/* Brand row */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", padding: "0.5rem 0.875rem 0.625rem" }}>
-        <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "0.75rem", fontWeight: 700, color: "#fff" }}>
-          {initial}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "#fafafa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {ad.page_name}
-          </div>
-          <div style={{ fontSize: "0.7rem", color: "#52525b", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ color: isActive ? "#22c55e" : "#71717a", fontSize: "0.55rem" }}>●</span>
-            {formatDate(ad.ad_delivery_start_time)} – {isActive ? "Present" : formatDate(ad.ad_delivery_stop_time)}
-            {days !== null && <span style={{ color: "#3f3f46" }}>&nbsp;{days}d</span>}
-          </div>
-        </div>
-        {/* Platform badges */}
-        <div style={{ display: "flex", gap: "0.2rem" }}>
-          {platforms.includes("facebook") && <span style={{ fontSize: "0.6rem", padding: "1px 5px", borderRadius: "3px", background: "#1d4ed820", color: "#93c5fd", border: "1px solid #1d4ed840" }}>FB</span>}
-          {platforms.includes("instagram") && <span style={{ fontSize: "0.6rem", padding: "1px 5px", borderRadius: "3px", background: "#7c3aed20", color: "#c4b5fd", border: "1px solid #7c3aed40" }}>IG</span>}
-        </div>
-      </div>
+        {/* skeleton */}
+        {imgLoading && (
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(90deg, #0d0d10 25%, #1a1a1f 50%, #0d0d10 75%)",
+            backgroundSize: "200% 100%",
+            animation: "skeleton 1.4s ease infinite",
+          }} />
+        )}
 
-      {/* Creative area — real image or text fallback */}
-      <div style={{ margin: "0 0.875rem", borderRadius: "8px", overflow: "hidden", background: "#0d0d10", border: "1px solid #1e1e23", minHeight: "180px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {imgLoading ? (
-          /* Skeleton pulse */
-          <div style={{ width: "100%", height: "180px", background: "linear-gradient(90deg, #0d0d10 25%, #1a1a1f 50%, #0d0d10 75%)", backgroundSize: "200% 100%", animation: "skeleton 1.4s ease infinite" }} />
-        ) : imgUrl ? (
+        {/* real image */}
+        {!imgLoading && imgUrl && (
           <img
             src={imgUrl}
             alt="Ad creative"
-            loading="lazy"
-            style={{ width: "100%", display: "block", maxHeight: "320px", objectFit: "cover" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             onError={() => setImgUrl(null)}
           />
-        ) : (
-          /* Text fallback if no image found */
-          <div style={{ padding: "1rem", width: "100%", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg, ${color}80, transparent)` }} />
+        )}
+
+        {/* text fallback when no image */}
+        {!imgLoading && !imgUrl && (
+          <div style={{
+            position: "absolute", inset: 0,
+            display: "flex", flexDirection: "column",
+            justifyContent: "center",
+            padding: "1.25rem",
+            background: `linear-gradient(135deg, #0a0a0d 0%, #111115 100%)`,
+          }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, ${color}, transparent)` }} />
             {title && (
-              <p style={{ margin: "0 0 0.5rem", fontSize: "0.8rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.4 }}>
-                {title.length > 80 ? title.slice(0, 80) + "…" : title}
+              <p style={{ margin: "0 0 0.5rem", fontSize: "0.85rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.4 }}>
+                {title.length > 90 ? title.slice(0, 90) + "…" : title}
               </p>
             )}
             {body && (
-              <p style={{ margin: 0, fontSize: "0.75rem", color: "#71717a", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "#71717a", lineHeight: 1.5,
+                display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                 {body}
               </p>
             )}
             {!title && !body && (
-              <p style={{ margin: 0, fontSize: "0.75rem", color: "#3f3f46", fontStyle: "italic" }}>No preview available</p>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "#3f3f46", fontStyle: "italic", textAlign: "center" }}>
+                No preview available
+              </p>
             )}
-            {caption && (
-              <div style={{ marginTop: "0.5rem", fontSize: "0.65rem", color: "#22c55e", background: "#22c55e10", padding: "0.2rem 0.5rem", borderRadius: "4px", display: "inline-block", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {caption}
+          </div>
+        )}
+
+        {/* Top-left: run time badge + stars */}
+        <div style={{ position: "absolute", top: "0.5rem", left: "0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+          {days !== null && (
+            <div style={{
+              background: "rgba(0,0,0,0.75)",
+              backdropFilter: "blur(4px)",
+              borderRadius: "6px",
+              padding: "2px 7px",
+              fontSize: "0.65rem",
+              fontWeight: 700,
+              color: days >= 30 ? "#22c55e" : "#a1a1aa",
+              display: "flex", alignItems: "center", gap: "3px",
+            }}>
+              <span style={{ fontSize: "0.6rem" }}>🕒</span> {days}d
+            </div>
+          )}
+        </div>
+
+        {/* Top-right: platform badges */}
+        <div style={{ position: "absolute", top: "0.5rem", right: "0.5rem", display: "flex", gap: "0.2rem" }}>
+          {platforms.includes("facebook") && (
+            <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(29,78,216,0.85)", color: "#bfdbfe", fontWeight: 600 }}>FB</span>
+          )}
+          {platforms.includes("instagram") && (
+            <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(124,58,237,0.85)", color: "#ddd6fe", fontWeight: 600 }}>IG</span>
+          )}
+        </div>
+
+        {/* Bottom gradient + brand info overlay */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)",
+          padding: "1.5rem 0.75rem 0.6rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div style={{
+              width: "24px", height: "24px", borderRadius: "50%",
+              background: color, flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "0.65rem", fontWeight: 700, color: "#fff",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}>
+              {initial}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#fafafa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {ad.page_name}
               </div>
-            )}
+              <div style={{ fontSize: "0.62rem", color: "#a1a1aa", display: "flex", alignItems: "center", gap: "3px" }}>
+                <span style={{ color: isActive ? "#22c55e" : "#71717a", fontSize: "0.5rem" }}>●</span>
+                {formatDate(ad.ad_delivery_start_time)} – {isActive ? "Now" : formatDate(ad.ad_delivery_stop_time)}
+              </div>
+            </div>
+            {/* Star rating */}
+            <div style={{ display: "flex", gap: "1px", flexShrink: 0 }}>
+              {[1,2,3,4,5].map(s => (
+                <span key={s} style={{ fontSize: "0.6rem", color: s <= rating ? "#22c55e" : "#3f3f46" }}>★</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── AD COPY ── */}
+      <div style={{ padding: "0.625rem 0.875rem", flex: 1 }}>
+        {title && (
+          <p style={{ margin: "0 0 0.25rem", fontSize: "0.78rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.3,
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {title}
+          </p>
+        )}
+        {body && (
+          <p style={{ margin: 0, fontSize: "0.72rem", color: "#71717a", lineHeight: 1.4,
+            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {body}
+          </p>
+        )}
+        {!title && !body && (
+          <p style={{ margin: 0, fontSize: "0.72rem", color: "#3f3f46", fontStyle: "italic" }}>No ad copy</p>
+        )}
+
+        {/* impressions pill */}
+        {impressions && (
+          <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <span style={{ fontSize: "0.65rem", color: "#52525b" }}>👁 {fmt(impressions)} impressions</span>
           </div>
         )}
       </div>
 
-      {/* Ad copy below image */}
-      {!imgLoading && imgUrl && (title || body) && (
-        <div style={{ padding: "0.625rem 0.875rem 0", borderTop: "none" }}>
-          {title && (
-            <p style={{ margin: "0 0 0.25rem", fontSize: "0.78rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.3 }}>
-              {title.length > 70 ? title.slice(0, 70) + "…" : title}
-            </p>
-          )}
-          {body && (
-            <p style={{ margin: 0, fontSize: "0.72rem", color: "#71717a", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-              {body}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Action bar */}
-      <div style={{ display: "flex", gap: "0.5rem", padding: "0.75rem 0.875rem", marginTop: "auto" }}>
+      {/* ── ACTION BAR ── */}
+      <div style={{ display: "flex", gap: "0.5rem", padding: "0 0.875rem 0.75rem" }}>
         {ad.ad_snapshot_url ? (
-          <a href={ad.ad_snapshot_url} target="_blank" rel="noopener noreferrer"
-            style={{ flex: 1, textAlign: "center", fontSize: "0.75rem", color: "#a1a1aa", padding: "0.4rem 0", border: "1px solid #27272a", borderRadius: "6px", textDecoration: "none", transition: "all 0.15s" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#3f3f46"; (e.currentTarget as HTMLElement).style.color = "#fafafa"; }}
+          <a
+            href={ad.ad_snapshot_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              flex: 1, textAlign: "center", fontSize: "0.72rem", fontWeight: 500,
+              color: "#a1a1aa", padding: "0.45rem 0",
+              border: "1px solid #27272a", borderRadius: "7px",
+              textDecoration: "none", transition: "all 0.15s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#52525b"; (e.currentTarget as HTMLElement).style.color = "#fafafa"; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#27272a"; (e.currentTarget as HTMLElement).style.color = "#a1a1aa"; }}
           >
             View Ad ↗
           </a>
         ) : <div style={{ flex: 1 }} />}
 
-        <button onClick={toggle}
+        <button
+          onClick={toggle}
           style={{
-            flex: 1, fontSize: "0.75rem", fontWeight: 600, padding: "0.4rem 0",
-            border: "none", borderRadius: "6px", cursor: "pointer", transition: "all 0.15s",
-            background: saved ? "#22c55e" : "#22c55e20",
+            flex: 1, fontSize: "0.72rem", fontWeight: 700, padding: "0.45rem 0",
+            border: "none", borderRadius: "7px", cursor: "pointer", transition: "all 0.15s",
+            background: saved ? "#22c55e" : "#22c55e18",
             color: saved ? "#000" : "#22c55e",
           }}
         >
