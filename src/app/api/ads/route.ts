@@ -49,9 +49,9 @@ export async function GET(req: NextRequest) {
   if (query) {
     params.set("search_terms", query);
   } else if (!pageIds) {
-    // Meta API requires search_terms when ad_type=ALL and no page_ids are given.
-    // Use a broad default so the browse/auto-load view works without a keyword.
-    params.set("search_terms", "a");
+    // Meta API requires search_terms for ad_type=ALL with no page_ids.
+    // "shop" biases toward ecommerce/product ads (English, image-rich).
+    params.set("search_terms", "shop");
   }
   if (pageIds) params.set("search_page_ids", pageIds);
   if (after) params.set("after", after);

@@ -41,18 +41,9 @@ interface Props { ad: Ad; onRemove?: () => void; }
 
 export default function AdCard({ ad, onRemove }: Props) {
   const [saved, setSaved] = useState(false);
-  const [imgUrl, setImgUrl] = useState<string | null>(null);
-  const [imgLoading, setImgLoading] = useState(true);
+  const [frameLoaded, setFrameLoaded] = useState(false);
 
   useEffect(() => { setSaved(isSaved(ad.id)); }, [ad.id]);
-
-  useEffect(() => {
-    if (!ad.id) { setImgLoading(false); return; }
-    fetch(`/api/snapshot?id=${ad.id}`)
-      .then(r => r.json())
-      .then(d => { setImgUrl(d.imageUrl ?? null); setImgLoading(false); })
-      .catch(() => setImgLoading(false));
-  }, [ad.id]);
 
   const toggle = () => {
     if (saved) { removeAd(ad.id); setSaved(false); onRemove?.(); }
@@ -68,6 +59,7 @@ export default function AdCard({ ad, onRemove }: Props) {
   const color = brandColor(ad.page_name ?? "");
   const initial = (ad.page_name || "?")[0].toUpperCase();
   const impressions = ad.impressions?.lower_bound;
+  const hasSnapshot = !!ad.ad_snapshot_url;
 
   return (
     <div
@@ -79,13 +71,12 @@ export default function AdCard({ ad, onRemove }: Props) {
         flexDirection: "column",
         overflow: "hidden",
         transition: "border-color 0.15s, transform 0.15s, box-shadow 0.15s",
-        cursor: "pointer",
       }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement;
         el.style.borderColor = "#22c55e50";
         el.style.transform = "translateY(-2px)";
-        el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
+        el.style.boxShadow = "0 8px 24px rgba(0,0,0,0.5)";
       }}
       onMouseLeave={e => {
         const el = e.currentTarget as HTMLElement;
@@ -95,36 +86,49 @@ export default function AdCard({ ad, onRemove }: Props) {
       }}
     >
       {/* ── THUMBNAIL ── */}
-      <div style={{ position: "relative", width: "100%", aspectRatio: "4/3", background: "#0a0a0d", overflow: "hidden", flexShrink: 0 }}>
+      <div style={{
+        position: "relative",
+        width: "100%",
+        height: "270px",
+        background: "#0a0a0d",
+        overflow: "hidden",
+        flexShrink: 0,
+      }}>
 
-        {/* skeleton */}
-        {imgLoading && (
+        {/* Skeleton shown until iframe loads */}
+        {!frameLoaded && (
           <div style={{
-            position: "absolute", inset: 0,
+            position: "absolute", inset: 0, zIndex: 1,
             background: "linear-gradient(90deg, #0d0d10 25%, #1a1a1f 50%, #0d0d10 75%)",
             backgroundSize: "200% 100%",
             animation: "skeleton 1.4s ease infinite",
           }} />
         )}
 
-        {/* real image */}
-        {!imgLoading && imgUrl && (
-          <img
-            src={imgUrl}
-            alt="Ad creative"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            onError={() => setImgUrl(null)}
+        {/* iframe — loads the real ad creative from Facebook */}
+        {hasSnapshot ? (
+          <iframe
+            src={ad.ad_snapshot_url}
+            title="Ad preview"
+            loading="lazy"
+            scrolling="no"
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+              display: "block",
+              pointerEvents: "none",
+              opacity: frameLoaded ? 1 : 0,
+              transition: "opacity 0.3s",
+            }}
+            onLoad={() => setFrameLoaded(true)}
           />
-        )}
-
-        {/* text fallback when no image */}
-        {!imgLoading && !imgUrl && (
+        ) : (
+          /* Text fallback when no snapshot URL */
           <div style={{
             position: "absolute", inset: 0,
-            display: "flex", flexDirection: "column",
-            justifyContent: "center",
+            display: "flex", flexDirection: "column", justifyContent: "center",
             padding: "1.25rem",
-            background: `linear-gradient(135deg, #0a0a0d 0%, #111115 100%)`,
           }}>
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, ${color}, transparent)` }} />
             {title && (
@@ -134,75 +138,71 @@ export default function AdCard({ ad, onRemove }: Props) {
             )}
             {body && (
               <p style={{ margin: 0, fontSize: "0.78rem", color: "#71717a", lineHeight: 1.5,
-                display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                 {body}
               </p>
             )}
             {!title && !body && (
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "#3f3f46", fontStyle: "italic", textAlign: "center" }}>
-                No preview available
-              </p>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "#3f3f46", fontStyle: "italic", textAlign: "center" }}>No preview</p>
             )}
           </div>
         )}
 
-        {/* Top-left: run time badge + stars */}
-        <div style={{ position: "absolute", top: "0.5rem", left: "0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-          {days !== null && (
-            <div style={{
-              background: "rgba(0,0,0,0.75)",
-              backdropFilter: "blur(4px)",
-              borderRadius: "6px",
-              padding: "2px 7px",
-              fontSize: "0.65rem",
-              fontWeight: 700,
-              color: days >= 30 ? "#22c55e" : "#a1a1aa",
-              display: "flex", alignItems: "center", gap: "3px",
-            }}>
-              <span style={{ fontSize: "0.6rem" }}>🕒</span> {days}d
-            </div>
-          )}
-        </div>
+        {/* ── Overlay badges (always on top) ── */}
+
+        {/* Top-left: run time */}
+        {days !== null && (
+          <div style={{
+            position: "absolute", top: "0.5rem", left: "0.5rem", zIndex: 2,
+            background: "rgba(0,0,0,0.72)", backdropFilter: "blur(4px)",
+            borderRadius: "6px", padding: "2px 8px",
+            fontSize: "0.65rem", fontWeight: 700,
+            color: days >= 30 ? "#22c55e" : "#a1a1aa",
+            display: "flex", alignItems: "center", gap: "3px",
+          }}>
+            🕒 {days}d
+          </div>
+        )}
 
         {/* Top-right: platform badges */}
-        <div style={{ position: "absolute", top: "0.5rem", right: "0.5rem", display: "flex", gap: "0.2rem" }}>
+        <div style={{ position: "absolute", top: "0.5rem", right: "0.5rem", zIndex: 2, display: "flex", gap: "0.2rem" }}>
           {platforms.includes("facebook") && (
-            <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(29,78,216,0.85)", color: "#bfdbfe", fontWeight: 600 }}>FB</span>
+            <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(29,78,216,0.9)", color: "#bfdbfe", fontWeight: 600 }}>FB</span>
           )}
           {platforms.includes("instagram") && (
-            <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(124,58,237,0.85)", color: "#ddd6fe", fontWeight: 600 }}>IG</span>
+            <span style={{ fontSize: "0.6rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(124,58,237,0.9)", color: "#ddd6fe", fontWeight: 600 }}>IG</span>
           )}
         </div>
 
-        {/* Bottom gradient + brand info overlay */}
+        {/* Bottom gradient + brand info */}
         <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
-          background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)",
-          padding: "1.5rem 0.75rem 0.6rem",
+          position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
+          background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)",
+          padding: "2rem 0.75rem 0.6rem",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <div style={{
-              width: "24px", height: "24px", borderRadius: "50%",
+              width: "22px", height: "22px", borderRadius: "50%",
               background: color, flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.65rem", fontWeight: 700, color: "#fff",
-              border: "1px solid rgba(255,255,255,0.2)",
+              fontSize: "0.6rem", fontWeight: 700, color: "#fff",
+              border: "1px solid rgba(255,255,255,0.25)",
             }}>
               {initial}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#fafafa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#fafafa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {ad.page_name}
               </div>
-              <div style={{ fontSize: "0.62rem", color: "#a1a1aa", display: "flex", alignItems: "center", gap: "3px" }}>
+              <div style={{ fontSize: "0.6rem", color: "#a1a1aa", display: "flex", alignItems: "center", gap: "3px" }}>
                 <span style={{ color: isActive ? "#22c55e" : "#71717a", fontSize: "0.5rem" }}>●</span>
                 {formatDate(ad.ad_delivery_start_time)} – {isActive ? "Now" : formatDate(ad.ad_delivery_stop_time)}
               </div>
             </div>
-            {/* Star rating */}
+            {/* Stars */}
             <div style={{ display: "flex", gap: "1px", flexShrink: 0 }}>
               {[1,2,3,4,5].map(s => (
-                <span key={s} style={{ fontSize: "0.6rem", color: s <= rating ? "#22c55e" : "#3f3f46" }}>★</span>
+                <span key={s} style={{ fontSize: "0.58rem", color: s <= rating ? "#22c55e" : "#3f3f46" }}>★</span>
               ))}
             </div>
           </div>
@@ -210,28 +210,24 @@ export default function AdCard({ ad, onRemove }: Props) {
       </div>
 
       {/* ── AD COPY ── */}
-      <div style={{ padding: "0.625rem 0.875rem", flex: 1 }}>
+      <div style={{ padding: "0.6rem 0.875rem", flex: 1 }}>
         {title && (
-          <p style={{ margin: "0 0 0.25rem", fontSize: "0.78rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.3,
+          <p style={{ margin: "0 0 0.2rem", fontSize: "0.77rem", fontWeight: 700, color: "#e4e4e7", lineHeight: 1.3,
             display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
             {title}
           </p>
         )}
         {body && (
-          <p style={{ margin: 0, fontSize: "0.72rem", color: "#71717a", lineHeight: 1.4,
+          <p style={{ margin: 0, fontSize: "0.71rem", color: "#71717a", lineHeight: 1.4,
             display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
             {body}
           </p>
         )}
         {!title && !body && (
-          <p style={{ margin: 0, fontSize: "0.72rem", color: "#3f3f46", fontStyle: "italic" }}>No ad copy</p>
+          <p style={{ margin: 0, fontSize: "0.71rem", color: "#3f3f46", fontStyle: "italic" }}>No ad copy</p>
         )}
-
-        {/* impressions pill */}
         {impressions && (
-          <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ fontSize: "0.65rem", color: "#52525b" }}>👁 {fmt(impressions)} impressions</span>
-          </div>
+          <p style={{ margin: "0.3rem 0 0", fontSize: "0.64rem", color: "#52525b" }}>👁 {fmt(impressions)} impressions</p>
         )}
       </div>
 
