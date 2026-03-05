@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   const country = searchParams.get("country") || "US";
   const status = searchParams.get("status") || "ACTIVE";
   const after = searchParams.get("after") || "";
-  const limit = searchParams.get("limit") || "30";
+  const limit = searchParams.get("limit") || "200";
   const pageIds = searchParams.get("page_ids") || "";
 
   const params = new URLSearchParams({

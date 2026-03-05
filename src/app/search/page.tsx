@@ -57,7 +57,7 @@ export default function SearchPage() {
     const params = new URLSearchParams({
       country: currentFilters.countries[0] ?? "US",
       status: currentFilters.status,
-      limit: "40",
+      limit: "200",
     });
     if (q.trim()) params.set("q", q.trim());
     if (cursor) params.set("after", cursor);

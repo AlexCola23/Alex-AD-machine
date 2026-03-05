@@ -78,10 +78,13 @@ export default function FilterSidebar({ filters, onChange }: Props) {
   const set = (partial: Partial<Filters>) => onChange({ ...filters, ...partial });
 
   const toggleCountry = (v: string) => {
-    const next = filters.countries.includes(v)
-      ? filters.countries.filter((c) => c !== v)
-      : [...filters.countries, v];
-    set({ countries: next.length ? next : [v] });
+    // Single-select: clicking a country switches to just that one.
+    // Clicking the already-selected country deselects (shows all).
+    if (filters.countries.length === 1 && filters.countries[0] === v) {
+      set({ countries: [] }); // deselect → will default to US in API
+    } else {
+      set({ countries: [v] });
+    }
   };
 
   const togglePlatform = (v: string) => {
