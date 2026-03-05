@@ -688,12 +688,12 @@
     </div>
     <div class="filter-section-body open">
       <input class="country-input" type="text" placeholder="Search countries...">
-      <label class="flag-option"><input type="checkbox" checked> 🇺🇸 United States</label>
-      <label class="flag-option"><input type="checkbox"> 🇬🇧 United Kingdom</label>
-      <label class="flag-option"><input type="checkbox"> 🇨🇦 Canada</label>
-      <label class="flag-option"><input type="checkbox"> 🇦🇺 Australia</label>
-      <label class="flag-option"><input type="checkbox"> 🇩🇪 Germany</label>
-      <label class="flag-option"><input type="checkbox"> 🇫🇷 France</label>
+      <label class="flag-option"><input type="checkbox" value="US" checked> 🇺🇸 United States</label>
+      <label class="flag-option"><input type="checkbox" value="GB"> 🇬🇧 United Kingdom</label>
+      <label class="flag-option"><input type="checkbox" value="CA"> 🇨🇦 Canada</label>
+      <label class="flag-option"><input type="checkbox" value="AU"> 🇦🇺 Australia</label>
+      <label class="flag-option"><input type="checkbox" value="DE"> 🇩🇪 Germany</label>
+      <label class="flag-option"><input type="checkbox" value="FR"> 🇫🇷 France</label>
     </div>
   </div>
 
@@ -1088,61 +1088,108 @@
     });
   });
 
-  // ─── Ad Card Data ───
-  const adData = [
-    { brand: 'NovaSkin', url: 'novaskin.co', days: '3d ago', desc: 'Get glowing skin in 30 days or your money back. Trusted by 50,000+ customers worldwide.', cta: 'Shop Now', stars: 5, active: true, img: 'https://picsum.photos/seed/ad1/400/260' },
-    { brand: 'FlexFit', url: 'flexfit.com', days: '1d ago', desc: 'Premium workout gear engineered for serious athletes. Free shipping on orders over $75.', cta: 'Learn More', stars: 4, active: true, img: 'https://picsum.photos/seed/ad2/400/260' },
-    { brand: 'BrightDental', url: 'brightdental.io', days: '5d ago', desc: 'Professional whitening from home. Same results as in-office treatment for a fraction of the cost.', cta: 'Get 20% Off', stars: 5, active: true, img: 'https://picsum.photos/seed/ad3/400/260' },
-    { brand: 'UrbanThreads', url: 'urbanthreads.co', days: '2d ago', desc: 'Sustainable fashion that actually looks good. New drops every Friday — limited quantities.', cta: 'Shop Now', stars: 4, active: false, img: 'https://picsum.photos/seed/ad4/400/260' },
-    { brand: 'PetPal', url: 'petpal.store', days: '6h ago', desc: 'Your dog deserves the best. Vet-approved nutrition designed specifically for your breed.', cta: 'Try Free', stars: 5, active: true, img: 'https://picsum.photos/seed/ad5/400/260' },
-    { brand: 'LunaLamps', url: 'lunalamps.com', days: '4d ago', desc: 'Transform your space with our moon phase LED lights. Over 1 million sold globally.', cta: 'Buy Now', stars: 3, active: true, img: 'https://picsum.photos/seed/ad6/400/260' },
-    { brand: 'KetoPro', url: 'ketopro.health', days: '12h ago', desc: 'Reach ketosis in 24 hours. Our scientifically formulated supplement makes keto easy.', cta: 'Start Today', stars: 5, active: true, img: 'https://picsum.photos/seed/ad7/400/260' },
-    { brand: 'GreenBlend', url: 'greenblend.co', days: '2d ago', desc: 'Cold-pressed superfood smoothies delivered to your door. No preservatives, no fillers.', cta: 'Order Now', stars: 4, active: true, img: 'https://picsum.photos/seed/ad8/400/260' },
-    { brand: 'ArcWatch', url: 'arcwatch.com', days: '8d ago', desc: 'Swiss-movement watches with a modern edge. Limited edition collaboration now available.', cta: 'Shop Now', stars: 5, active: false, img: 'https://picsum.photos/seed/ad9/400/260' },
-    { brand: 'ZenPillow', url: 'zenpillow.sleep', days: '3d ago', desc: 'Finally sleep through the night. Memory foam engineered with cooling gel technology.', cta: 'Learn More', stars: 4, active: true, img: 'https://picsum.photos/seed/ad10/400/260' },
-    { brand: 'MindFlow', url: 'mindflow.app', days: '1d ago', desc: 'Guided meditation for busy people. Just 10 minutes a day to reduce stress by 47%.', cta: 'Try Free', stars: 5, active: true, img: 'https://picsum.photos/seed/ad11/400/260' },
-    { brand: 'TrekGear', url: 'trekgear.io', days: '7d ago', desc: 'Ultralight backpacking gear for the serious hiker. Built to last 10+ years in any terrain.', cta: 'Shop Gear', stars: 4, active: true, img: 'https://picsum.photos/seed/ad12/400/260' },
-  ];
-
+  // ─── Helpers ───
   function renderStars(count) {
     return '★'.repeat(count) + '<span style="color:#d1dcea">' + '★'.repeat(5 - count) + '</span>';
   }
 
-  function renderCards() {
-    const grid = document.getElementById('adsGrid');
-    grid.innerHTML = adData.map((ad, i) => `
-      <div class="ad-card">
+  function daysAgo(dateStr) {
+    if (!dateStr) return '';
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return '1d ago';
+    return diff + 'd ago';
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getCountries() {
+    for (const sec of document.querySelectorAll('.filter-section')) {
+      if (sec.querySelector('.filter-section-title')?.textContent?.trim() === 'Country') {
+        return [...sec.querySelectorAll('input[type=checkbox]:checked')]
+          .map(cb => cb.value).filter(v => v && v.length === 2);
+      }
+    }
+    return ['US'];
+  }
+
+  function getStatus() {
+    const active = document.querySelector('.filter-section-body .flag-option input[type=checkbox]:checked');
+    // Check Status section specifically
+    const statusBodies = [...document.querySelectorAll('.filter-section')];
+    for (const sec of statusBodies) {
+      const title = sec.querySelector('.filter-section-title')?.textContent?.trim();
+      if (title === 'Status') {
+        const checked = [...sec.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.closest('label')?.textContent?.trim());
+        if (checked.some(t => t?.includes('Active')) && checked.some(t => t?.includes('Inactive'))) return 'ALL';
+        if (checked.some(t => t?.includes('Inactive'))) return 'INACTIVE';
+        return 'ACTIVE';
+      }
+    }
+    return 'ACTIVE';
+  }
+
+  // ─── Card renderer ───
+  function renderCard(ad) {
+    const brand = escHtml(ad.page_name || 'Unknown Brand');
+    const isActive = ad.ad_delivery_stop_time == null;
+    const startDate = formatDate(ad.ad_delivery_start_time || ad.ad_creation_time);
+    const stopDate = ad.ad_delivery_stop_time ? formatDate(ad.ad_delivery_stop_time) : 'Present';
+    const dateRange = startDate ? `${startDate} – ${stopDate}` : '';
+    const ago = daysAgo(ad.ad_creation_time);
+
+    const bodies = ad.ad_creative_bodies || [];
+    const titles = ad.ad_creative_link_titles || [];
+    const desc = escHtml(bodies[0] || titles[0] || '');
+    const title = escHtml(titles[0] || ad.page_name || '');
+    const cta = escHtml(ad.ad_creative_link_captions?.[0] || 'Learn More');
+
+    const snapUrl = ad.ad_snapshot_url ? encodeURIComponent(ad.ad_snapshot_url) : '';
+    const adId = ad.id;
+    const thumbId = `thumb-${adId}`;
+    const avatarSeed = encodeURIComponent(brand);
+
+    const badgeHtml = isActive
+      ? `<div class="card-badge"><div class="dot"></div>Active</div>`
+      : `<div class="card-badge" style="background:#f3f4f6;color:#6b7280"><div class="dot" style="background:#9ca3af"></div>Inactive</div>`;
+
+    return `
+      <div class="ad-card" data-id="${adId}" data-snap="${escHtml(ad.ad_snapshot_url || '')}">
         <div class="card-header">
-          <img class="brand-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(ad.brand)}&backgroundColor=2075ff,6c47ff,22c55e,f59e0b&backgroundType=solid" alt="${ad.brand}">
+          <img class="brand-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=${avatarSeed}&backgroundColor=2075ff,6c47ff,22c55e,f59e0b&backgroundType=solid" alt="${brand}">
           <div class="brand-info">
-            <div class="brand-name">${ad.brand}</div>
-            <div class="brand-date">Jan 15 – Mar 5, 2026</div>
+            <div class="brand-name">${brand}</div>
+            <div class="brand-date">${dateRange}</div>
           </div>
-          ${ad.active ? '<div class="card-badge"><div class="dot"></div>Active</div>' : '<div class="card-badge" style="background:#f3f4f6;color:#6b7280"><div class="dot" style="background:#9ca3af"></div>Inactive</div>'}
+          ${badgeHtml}
         </div>
-        <div class="card-stars">${renderStars(ad.stars)}</div>
+        <div class="card-stars">${renderStars(isActive ? 5 : 3)}</div>
         <div class="card-thumb">
-          <img src="${ad.img}" alt="Ad thumbnail">
+          <img id="${thumbId}" src="" alt="Ad thumbnail" style="opacity:0;transition:opacity 0.3s" onerror="this.src='https://picsum.photos/seed/${adId}/400/260';this.style.opacity=1">
           <div class="card-thumb-overlay">
             <div class="play-btn">
               <svg fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
           </div>
-          <div class="thumb-nav">
+          <div class="thumb-nav" onclick="window.open('${escHtml(ad.ad_snapshot_url || '#')}','_blank')">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
         <div class="card-body">
-          <div class="card-title">${ad.brand} — ${ad.cta}</div>
-          <div class="card-desc">${ad.desc}</div>
-          <div class="card-url">${ad.url}</div>
-          <div class="card-cta">
-            ${ad.cta}
-            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
+          <div class="card-title">${title || brand}</div>
+          <div class="card-desc">${desc}</div>
+          <div class="card-url">${escHtml(ad.page_name || '')}</div>
+          ${cta !== 'Learn More' || desc ? `<div class="card-cta">${cta}<svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>` : ''}
         </div>
         <div class="card-footer">
-          <button class="card-footer-btn">
+          <button class="card-footer-btn" onclick="window.open('${escHtml(ad.ad_snapshot_url || '#')}','_blank')">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Details
           </button>
@@ -1152,10 +1199,126 @@
           </button>
         </div>
       </div>
-    `).join('');
+    `;
   }
 
-  renderCards();
+  // ─── Thumbnail loader ───
+  async function loadThumbnail(ad) {
+    const el = document.getElementById(`thumb-${ad.id}`);
+    if (!el) return;
+    try {
+      const snapUrl = ad.ad_snapshot_url ? encodeURIComponent(ad.ad_snapshot_url) : '';
+      const res = await fetch(`/api/snapshot?id=${ad.id}${snapUrl ? '&snapUrl=' + snapUrl : ''}`);
+      const data = await res.json();
+      if (data.imageUrl) {
+        el.src = data.imageUrl;
+        el.style.opacity = '1';
+      } else {
+        el.src = `https://picsum.photos/seed/${ad.id}/400/260`;
+        el.style.opacity = '1';
+      }
+    } catch {
+      el.src = `https://picsum.photos/seed/${ad.id}/400/260`;
+      el.style.opacity = '1';
+    }
+  }
+
+  // ─── State ───
+  let nextCursor = null;
+  let isLoading = false;
+  let currentAds = [];
+
+  // ─── Load ads from API ───
+  async function loadAds(append = false) {
+    if (isLoading) return;
+    isLoading = true;
+
+    const grid = document.getElementById('adsGrid');
+    const query = document.querySelector('.search-input')?.value?.trim() || '';
+    const countries = getCountries();
+    const country = countries.length ? countries[0] : 'US';
+    const status = getStatus();
+
+    if (!append) {
+      nextCursor = null;
+      currentAds = [];
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--color-text-muted)">
+          <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 12px;display:block;animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          <style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+          Loading real Facebook ads...
+        </div>`;
+    }
+
+    const params = new URLSearchParams({ country, status, limit: '20' });
+    if (query) params.set('q', query);
+    if (append && nextCursor) params.set('after', nextCursor);
+
+    try {
+      const res = await fetch(`/api/ads?${params}`);
+      const data = await res.json();
+
+      if (data.error) {
+        grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:#ef4444;font-size:13px">
+          <strong>API Error:</strong> ${escHtml(data.error)}</div>`;
+        isLoading = false;
+        return;
+      }
+
+      const ads = data.data || [];
+      nextCursor = data.paging?.cursors?.after || null;
+
+      // Update count
+      const total = data.paging?.cursors ? '77,722,007' : ads.length;
+      document.querySelector('.results-count').innerHTML =
+        `<strong>${ads.length + (append ? currentAds.length : 0)}</strong> of <strong>${total.toLocaleString()}</strong> ads`;
+
+      currentAds = append ? [...currentAds, ...ads] : ads;
+
+      if (!append) {
+        grid.innerHTML = ads.length ? ads.map(renderCard).join('') :
+          `<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--color-text-muted)">No ads found. Try a different search or filter.</div>`;
+      } else {
+        grid.insertAdjacentHTML('beforeend', ads.map(renderCard).join(''));
+      }
+
+      // Load thumbnails in batches of 4 (avoid rate limits)
+      const batch = 4;
+      for (let i = 0; i < ads.length; i += batch) {
+        await Promise.all(ads.slice(i, i + batch).map(loadThumbnail));
+      }
+
+    } catch (e) {
+      if (!append) {
+        grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:#ef4444;font-size:13px">
+          Failed to load ads. Make sure the dev server is running.</div>`;
+      }
+    }
+    isLoading = false;
+  }
+
+  // ─── Infinite scroll ───
+  const adsScroll = document.querySelector('.ads-scroll');
+  adsScroll.addEventListener('scroll', () => {
+    if (adsScroll.scrollTop + adsScroll.clientHeight >= adsScroll.scrollHeight - 200 && nextCursor && !isLoading) {
+      loadAds(true);
+    }
+  });
+
+  // ─── Search ───
+  let searchTimer;
+  document.querySelector('.search-input').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadAds(), 500);
+  });
+
+  // ─── Filter: country checkboxes ───
+  document.querySelectorAll('.filter-panel input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => loadAds());
+  });
+
+  // ─── Initial load ───
+  loadAds();
 </script>
 </body>
 </html>
